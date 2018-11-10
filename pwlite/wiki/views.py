@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """Wiki section, including wiki pages for each group."""
 from flask import Blueprint, g, render_template, redirect, url_for, \
-    request, flash, send_from_directory
+    request, flash, send_from_directory, abort, current_app
 from datetime import datetime, date
 import os
 import math
@@ -34,6 +34,8 @@ def add_wiki_group_code(endpoint, values):
 @blueprint.url_value_preprocessor
 def pull_wiki_group_code(endpoint, values):
     g.wiki_group = values.pop('wiki_group')
+    if g.wiki_group not in current_app.active_wiki_groups:
+        abort(404)
 
 
 @blueprint.before_request
@@ -50,6 +52,9 @@ def close_database_connection(response):
 # Docs: http://flask.pocoo.org/docs/1.0/templating/#context-processors
 @blueprint.context_processor
 def inject_wiki_group_data():
+    if g.wiki_group not in current_app.active_wiki_groups:
+        return dict()
+
     if '/edit/' in request.path or '/upload/' in request.path:
         return dict(wiki_group=g.wiki_group)
 
@@ -63,6 +68,7 @@ def inject_wiki_group_data():
              .order_by(WikiKeypage.id))
     wiki_keypages = query.execute()
 
+    # TODO: enhancement - this might be a performance bottleneck in the future.
     query = (WikiPage
              .select(WikiPage.id, WikiPage.title, WikiPage.modified_on)
              .order_by(WikiPage.modified_on.desc())
@@ -409,7 +415,7 @@ def keypage_edit():
         (WikiKeypage
          .insert_many(wiki_pages, fields=[WikiKeypage.wiki_page])
          .execute())
-        
+
         return redirect(url_for('.home'))
 
     return render_template(

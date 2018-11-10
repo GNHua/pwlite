@@ -8,8 +8,7 @@
     {% endfor %}
   </ul>
 
-  {# TODO: add function for more #}
-  <strong>Changes {{ latest_change_time }}</strong> <a href="#">[more]</a>
+  <strong>Changes {{ latest_change_time }}</strong> <a href="{{ url_for('wiki.changes') }}">[more]</a>
   <ul class="nav flex-column">
     {% for wiki_change in wiki_changes %}
     <li class="nav-item col-md-12 px-0">

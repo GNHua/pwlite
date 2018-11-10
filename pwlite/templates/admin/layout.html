@@ -1,12 +1,21 @@
 
 {% extends "layout.html" %}
 
+{% block css %}
+{{ stylesheet_tag('css/dashboard.css') }}
+{{ stylesheet_tag('css/toggle_switch.css') }}
+{% endblock %}
+
 {% block body %}
-{% include "admin/nav.html" %}
+<nav class="navbar navbar-expand-md navbar-dark fixed-top bg-dark">
+  <span class="navbar-brand">
+    {% block header %}{% endblock %}
+  </span>
+</nav>
 
 <div class="container-fluid">
   <div class="row">
-    {% include "admin/sidebar.html" %}
+    {% include 'admin/sidebar.html' %}
 
     <main role="main" class="col-md-9 ml-sm-auto col-lg-10 px-4">
       {% with messages = get_flashed_messages(with_categories=true) %}
@@ -23,11 +32,10 @@
       </div><!-- end row -->
       {% endif %}
       {% endwith %}
-      
-      {% block content %}{% endblock %}
+      <div class="other-content">
+        {% block other_content %}{% endblock %}
+      </div>
     </main>
   </div>
 </div>
-
 {% endblock %}
-

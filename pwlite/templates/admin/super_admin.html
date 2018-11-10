@@ -1,12 +1,9 @@
 
 {% extends "admin/layout.html" %}
 
-{% block css %}
-{{ stylesheet_tag('css/dashboard.css') }}
-{{ stylesheet_tag('css/toggle_switch.css') }}
-{% endblock %}
+{% block header %}Super Admin{% endblock %}
 
-{% block content %}
+{% block other_content %}
 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
   <h1 class="h2">Current wiki groups</h1>
   <div class="btn-toolbar mb-2 mb-md-0">
@@ -50,8 +47,7 @@
         {% else %}
           {% set checked = '' %}
         {% endif %}
-        {# TODO: add activate/deactivate #}
-        <input type="checkbox" onclick="location.href='#'" {{ checked }}>
+        <input type="checkbox" onclick="location.href='{{ url_for('admin.activate', wiki_group=wiki_group.db_name) }}'" {{ checked }}>
         <span class="slider round"></span>
       </label>
     </td>

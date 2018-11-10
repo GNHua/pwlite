@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
 """Admin section"""
 from flask import Blueprint, flash, redirect, render_template, request, \
-    url_for, send_from_directory
+    url_for, send_from_directory, current_app
 import os
 from peewee import IntegrityError
 
-from pwlite.utils import flash_errors
+from pwlite.utils import flash_errors, get_object_or_404
 from pwlite.extensions import db
-from pwlite.settings import DB_ADMIN, DB_PATH
+from pwlite.settings import ADMIN_DB, DB_PATH
 from pwlite.models import WikiGroup, WikiPage, WikiPageIndex, \
     WikiPageVersion, WikiReference, WikiFile, WikiKeypage
 from pwlite.admin.forms import AddWikiGroupForm
@@ -16,7 +16,7 @@ blueprint = Blueprint('admin', __name__, static_folder='../static')
 
 @blueprint.before_request
 def open_database_connection():
-    db.pick(DB_ADMIN)
+    db.pick(ADMIN_DB)
 
 
 @blueprint.after_request
@@ -59,6 +59,10 @@ def super_admin():
                 active=True
             )
             os.mkdir(os.path.join(DB_PATH, new_wiki_group.db_name))
+            query = WikiGroup.select().where(WikiGroup.active==True)
+            current_app.active_wiki_groups = [
+                wiki_group.db_name for wiki_group in query.execute()
+            ]
 
             db.close()
             db.pick(new_wiki_group.db_filename())
@@ -91,7 +95,24 @@ def super_admin():
     )
 
 
-# TODO: activate/de-activate groups
+@blueprint.route('/activate/<wiki_group>')
+def activate(wiki_group):
+    try:
+        wg = (WikiGroup
+              .select()
+              .where(WikiGroup.db_name==wiki_group)
+              .get())
+        wg.active = not wg.active
+        wg.save()
+        query = WikiGroup.select().where(WikiGroup.active==True)
+        current_app.active_wiki_groups = [
+            wiki_group.db_name for wiki_group in query.execute()
+        ]
+    except WikiGroup.DoesNotExist:
+        pas
+    return redirect(url_for('.super_admin'))
+
+
 # TODO: delete group
 
 

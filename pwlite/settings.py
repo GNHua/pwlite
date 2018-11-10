@@ -19,5 +19,5 @@ SECRET_KEY = env.str('SECRET_KEY')
 DEBUG_TB_ENABLED = DEBUG
 DEBUG_TB_INTERCEPT_REDIRECTS = False
 DB_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir, 'db'))
-DB_ADMIN = '_admin.db'
+ADMIN_DB = '_admin.db'
 TIMEZONE = timezone(timedelta(hours=-7), 'MDT') # Mountain Daylight Time

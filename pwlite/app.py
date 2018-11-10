@@ -69,7 +69,12 @@ def register_commands(app):
 
 
 def register_database(app):
-    if not os.path.exists(app.config['DB_ADMIN']):
-        db.pick(app.config['DB_ADMIN'])
+    admin_db_exists = not os.path.exists(app.config['ADMIN_DB'])
+    db.pick(app.config['ADMIN_DB'])
+    if not admin_db_exists:
         db.create_tables([WikiGroup])
-        db.close()
+    query = WikiGroup.select().where(WikiGroup.active==True)
+    app.active_wiki_groups = [
+        wiki_group.db_name for wiki_group in query.execute()
+    ]
+    db.close()
