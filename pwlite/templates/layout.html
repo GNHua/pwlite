@@ -1,0 +1,37 @@
+{% macro stylesheet_tag(filename, rel='stylesheet') -%}
+  <link href="{{ url_for('static', filename=filename) }}" rel="{{ rel }}">
+{%- endmacro %}
+
+{% macro javascript_tag(filename) -%}
+  <script src="{{ url_for('static', filename=filename) }}"></script>
+{%- endmacro %}
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+
+    {{ stylesheet_tag('images/favicon.ico', rel='icon') }}
+
+    <title>Project Wiki lite</title>
+
+    {{ stylesheet_tag('css/bootstrap.min.css') }}
+    {% block css %}{% endblock %}
+  </head>
+
+  <body class="{% block body_class %}{% endblock %}">
+    {% block body %}{% endblock %}
+
+    <script
+      src="https://code.jquery.com/jquery-3.3.1.min.js"
+      integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
+      crossorigin="anonymous"></script>
+    <script>window.jQuery || document.write(`<script src="{{ url_for('static', filename='js/jquery-3.3.1.min.js') }}"><\/script>`)</script>
+    {{ javascript_tag('js/popper.min.js') }}
+    {{ javascript_tag('js/bootstrap.min.js') }}
+
+    {% block js %}{% endblock %}
+  </body>
+</html>

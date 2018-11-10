@@ -1,0 +1,25 @@
+# Everything needed in production
+
+# Flask
+Flask==1.0.2
+MarkupSafe>=0.23
+Werkzeug>=0.14
+Jinja2>=2.10
+itsdangerous>=0.24
+click>=5.1
+
+# Database
+peewee==3.7.1
+
+# Forms
+Flask-WTF==0.14.2
+WTForms==2.2.1
+
+# Environment variable parsing
+environs==4.0.0
+marshmallow>=2.7.0
+python-dotenv==0.9.1
+
+# Markdown
+Markdown==2.6.8
+pymdown-extensions==3.5

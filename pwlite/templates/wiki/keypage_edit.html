@@ -1,0 +1,17 @@
+{% extends 'wiki/layout.html' %}
+
+{% block header %}
+Edit Keypages
+{% endblock %}
+
+{% block other_content %}
+<small id="keypageHelp" class="form-text text-muted">Add keypage titles, one title per line. Non-existing page will be ignored.</small>
+<form method="POST">
+  {{ form.csrf_token }}
+  <div class="form-group">
+    {{ form.textArea(class_='form-control', rows='15') }}
+  </div>
+  {{ form.submit(class="btn btn-primary") }}
+  <a href="{{ url_for('wiki.home') }}" class="btn btn-secondary" role="button" aria-pressed="true">Cancel</a>
+</form>
+{% endblock %}

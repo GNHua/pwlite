@@ -1,0 +1,61 @@
+main  {
+  font-size: 14px;
+  line-height: 1.5em;
+}
+
+/*a:not(.page-link){ color: #0078ff; }*/
+.sidebar a:visited, main a:visited:not(.btn){ color: #993399; }
+.sidebar a:hover:not(.btn), main a:hover:not(.btn){ color: #06e; }
+.sidebar a:active, main a:active{ color:#faa700; }
+.sidebar a:focus, main a:focus{ outline: thin dotted; }
+.sidebar a:hover, .sidebar a:active, main a:hover, main a:active{ outline: 0; }
+
+main p{margin:1em 0;}
+
+main img{max-width:100%;}
+
+main h1, main h2, main h3, main h4, main h5, main h6{font-weight:bold;color:#111;line-height:1em;margin:1rem 0;}
+main h1{ font-size:2em; }
+main h2{ font-size:1.6em; }
+main h3{ font-size:1.2em; }
+main h4, main h5, main h6{ font-size:1em; }
+
+
+main blockquote{color:#666666;margin:0;padding-left: 3em;border-left: 0.5em #EEE solid;}
+main hr { display: block; height: 1px; border: 0; border-top: 1px solid #aaa; margin: 0; padding: 0; }
+
+main pre, main code{
+  color: #000;
+  font-family:Consolas, "Liberation Mono", Menlo, Courier, monospace;
+  font-size: 0.94em; /* 0.94 = 0.88 + (1.00 - 0.88) / 2 */
+  border-radius:3px;
+  background-color: #F8F8F8;
+  border: 1px solid #CCC;
+}
+main pre { white-space: pre; white-space: pre-wrap; word-wrap: break-word; padding: 5px; margin-top: 1rem;}
+main pre code { border: 0px !important; background: transparent !important; line-height: 1.3em; }
+main sub, main sup { font-size: 75%; line-height: 0; position: relative; vertical-align: baseline; }
+main sup { top: -0.5em; }
+main sub { bottom: -0.25em; }
+main ul:not(.comments), main ol { margin: 0 0; padding: 0 0 0 2em; }
+main li p:last-child { margin:0 }
+main dd { margin: 0 0 0 2em; }
+main img { border: 0; -ms-interpolation-mode: bicubic; }
+main table:not(.diff) { margin: 1rem 0; border-collapse: collapse; border-spacing: 0; }
+main .diff {line-height: 1em;}
+main table:not(.diff) td, main table:not(.diff) th { vertical-align: top; padding:0 10px; border: 1px solid #bbb; }
+main table:not(.diff) th { text-align: center; }
+main table:not(.diff) tr:nth-child(even) td, main table:not(.diff) tr:nth-child(even) th { background: #eee; }
+main .close { line-height:1rem; }
+main nav ul { padding: 0; }
+main figure {text-align: center;}
+
+
+.btn { cursor: pointer;; }
+
+:target:before {
+  content:"";
+  display:block;
+  height:60px; /* fixed header height*/
+  margin:-60px 0 0; /* negative fixed header height */
+}

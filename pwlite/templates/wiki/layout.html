@@ -1,0 +1,75 @@
+{% extends "layout.html" %}
+
+{% block css %}
+{{ stylesheet_tag('css/dashboard.css') }}
+{# stylesheet_tag('css/markdown.css') #}
+{{ stylesheet_tag('editor/lib/github-markdown.css') }}
+{% endblock %}
+
+{% block body %}
+<nav class="navbar navbar-expand-md navbar-dark fixed-top bg-dark">
+  <span class="navbar-brand">
+    {% block header %}{% endblock %}
+  </span>
+  {% include 'wiki/nav.html' %}
+</nav>
+
+<div class="container-fluid">
+  <div class="row">
+    {% include 'wiki/sidebar.html' %}
+
+    <main role="main" class="col-md-9 ml-sm-auto col-lg-10 px-4">
+      {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+      <div class="row">
+        <div class="col-md-12">
+          {% for category, message in messages %}
+          <div class="alert alert-{{ category }}">
+            <a class="close" title="Close" href="#" data-dismiss="alert">&times;</a>
+            {{message}}
+          </div><!-- end .alert -->
+          {% endfor %}
+        </div><!-- end col-md -->
+      </div><!-- end row -->
+      {% endif %}
+      {% endwith %}
+      <div class="markdown-body">
+        {% block content %}{% endblock %}
+      </div>
+      <div class="other-content">
+        {% block other_content %}{% endblock %}
+      </div>
+    </main>
+  </div>
+</div>
+{% endblock %}
+
+{% block js %}
+<script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML' async></script>
+<script>window.MathJax || document.write(`<script src="{{ url_for('static', filename='js/MathJax/MathJax.js', config='TeX-MML-AM_CHTML') }}"></script>`)</script>
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+      processEscapes: true
+    }
+  });
+</script>
+<script type="text/javascript">
+  var d = document.getElementById('toc');
+  var uls = d.getElementsByTagName('ul');
+  if (uls.length > 0) {
+    uls[0].className = "nav flex-column";
+
+    var lis = d.getElementsByTagName('li');
+    var links = d.getElementsByTagName('a');
+    for (i = 0; i < lis.length; i++) {
+      lis[i].className = 'nav-item col-md-12 px-0';
+    }
+  }
+
+  function upload_file(wiki_group, wiki_page_id) {
+     window.open('/'+wiki_group+'/upload'+'/'+wiki_page_id, 'Attach', 'width=600, height=800, menubar=no, scrollbars=yes');
+  }
+</script>
+{% endblock js %}

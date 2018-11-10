@@ -1,0 +1,27 @@
+<nav class="col-md-2 d-none d-md-block bg-light sidebar">
+  <strong>Key Pages</strong> <a href="{{ url_for('wiki.keypage_edit') }}">[edit]</a>
+  <ul class="nav flex-column">
+    {% for wiki_keypage in wiki_keypages %}
+    <li class="nav-item col-md-12 px-0">
+      <a href="{{ url_for('wiki.page', wiki_page_id=wiki_keypage.id) }}">{{ wiki_keypage.title }}</a>
+    </li>
+    {% endfor %}
+  </ul>
+
+  {# TODO: add function for more #}
+  <strong>Changes {{ latest_change_time }}</strong> <a href="#">[more]</a>
+  <ul class="nav flex-column">
+    {% for wiki_change in wiki_changes %}
+    <li class="nav-item col-md-12 px-0">
+      <a href="{{ url_for('wiki.page', wiki_page_id=wiki_change.id) }}">{{ wiki_change.title }}</a>
+    </li>
+    {% endfor %}
+  </ul>
+
+  {% if wiki_page and wiki_page.toc %}
+  <div id="toc">
+    <strong>Table of contents</strong>
+    {{ wiki_page.toc | safe }}
+  </div>
+  {% endif %}
+</nav>

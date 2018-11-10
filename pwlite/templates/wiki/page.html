@@ -1,0 +1,21 @@
+{% extends 'wiki/layout.html' %}
+
+{% block header %}
+{{ wiki_page.title }}
+{% endblock %}
+
+{% block toc %}
+{% if wiki_page.toc %}
+{{ wiki_page.toc | safe }}
+{% endif %}
+{% endblock %}
+
+{% block content %}
+{% if wiki_page.html %}
+{{ wiki_page.html | safe }}
+{% endif %}
+<div align="right" style="border-top:1px solid #c9c5c5">
+  <i><small>modified on {{ format_datetime(wiki_page.modified_on) }}</small></i>
+</div>
+<br><br><br><br><br><br><br><br>
+{% endblock %}

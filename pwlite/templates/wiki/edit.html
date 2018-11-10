@@ -1,0 +1,78 @@
+{% macro stylesheet_tag(filename, rel='stylesheet') -%}
+  <link href="{{ url_for('static', filename=filename) }}" rel="{{ rel }}">
+{%- endmacro %}
+
+{% macro javascript_tag(filename) -%}
+  <script src="{{ url_for('static', filename=filename) }}"></script>
+{%- endmacro %}
+
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <title>Markdown Editor</title>
+    {{ stylesheet_tag('images/favicon.ico', rel='icon') }}
+    {{ stylesheet_tag('editor/lib/material-icons.css') }}
+    {{ stylesheet_tag('editor/lib/base16-light.css') }}
+    {{ stylesheet_tag('editor/codemirror/lib/codemirror.css') }}
+    {{ stylesheet_tag('editor/lib/default.css') }}
+    {{ stylesheet_tag('editor/lib/github-markdown.css') }}
+    {{ stylesheet_tag('editor/lib/spell-checker.min.css') }}
+    {{ stylesheet_tag('editor/lib/sweetalert.css') }}
+    {{ stylesheet_tag('editor/index.css') }}
+  </head>
+  <body id="toplevel">
+    <div id="in"><form method="POST">
+      {{ form.csrf_token }}
+      {% set f = form.textArea.process_data(wiki_page.markdown) %}
+      {{ form.textArea(id='code') }}
+      {{ form.submit(id='save', class_='hidden') }}
+      {{ form.current_version(value=wiki_page.current_version, readonly=true, class_='hidden') }}
+    </form></div>
+    <div id="out" class="markdown-body"></div>
+    <div id="navbar">
+      <div id="navcontent">
+        <p id="title" class="left">{{ wiki_page.title }}</p>
+        <p id="exitbutton" title="exit" class="navbutton right" onclick="go_to_wiki_page('{{ wiki_group }}', {{ wiki_page.id }})"><i class="material-icons">exit_to_app</i></p>
+        <p id="spellbutton" title="Spell Check" class="navbutton right selected" onclick="toggleSpellCheck(this)"><i class="material-icons">spellcheck</i></p>
+        <p id="readbutton" title="Reading Mode" class="navbutton right" onclick="toggleReadMode(this)"><i class="material-icons">chrome_reader_mode</i></p>
+        <p id="nightbutton" title="Night Mode" class="navbutton right" onclick="toggleNightMode(this)"><i class="material-icons">invert_colors</i></p>
+        <p id="uploadbutton" title="Upload" class="navbutton right"><i class="material-icons" onclick="upload()">file_upload</i></p>
+        <p id="browsersavebutton" title="Save" class="navbutton right" onclick="save()"><i class="material-icons">save</i></p>
+      </div>
+    </div>
+
+    {{ javascript_tag('editor/lib/markdown-it.js') }}
+    {{ javascript_tag('editor/lib/markdown-it-footnote.js') }}
+    {{ javascript_tag('editor/lib/highlight.pack.js') }}
+    {{ javascript_tag('editor/codemirror/lib/codemirror.js') }}
+    {{ javascript_tag('editor/codemirror/overlay.js') }}
+    {{ javascript_tag('editor/codemirror/xml/xml.js') }}
+    {{ javascript_tag('editor/codemirror/markdown/markdown.js') }}
+    {{ javascript_tag('editor/codemirror/gfm/gfm.js') }}
+    {{ javascript_tag('editor/codemirror/javascript/javascript.js') }}
+    {{ javascript_tag('editor/codemirror/css/css.js') }}
+    {{ javascript_tag('editor/codemirror/htmlmixed/htmlmixed.js') }}
+    {{ javascript_tag('editor/codemirror/lib/util/continuelist.js') }}
+    {{ javascript_tag('editor/lib/spell-checker.min.js') }}
+    {{ javascript_tag('editor/lib/rawinflate.js') }}
+    {{ javascript_tag('editor/lib/rawdeflate.js') }}
+    {{ javascript_tag('editor/lib/sweetalert.min.js') }}
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML' async></script>
+    <script>window.MathJax || document.write(`<script src="{{ url_for('static', filename='js/MathJax/MathJax.js', config='TeX-MML-AM_CHTML') }}"><\/script>`)</script>
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+        tex2jax: {
+          inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+          processEscapes: true
+        }
+      });
+    </script>
+    {{ javascript_tag('editor/index.js') }}
+    <script
+      src="https://code.jquery.com/jquery-3.3.1.min.js"
+      integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
+      crossorigin="anonymous"></script>
+    <script>window.jQuery || document.write(`<script src="{{ url_for('static', filename='js/jquery-3.3.1.min.js') }}"><\/script>`)</script>
+  </body>
+</html>

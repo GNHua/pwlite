@@ -1,0 +1,67 @@
+/*
+ * Sidebar
+ */
+
+.sidebar {
+  font-size: .875rem;
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 100; /* Behind the navbar */
+  padding: 58px 20px 20px 20px; /* Height of navbar */
+  box-shadow: inset -1px 0 0 rgba(0, 0, 0, .1);
+  overflow-x: hidden;
+  overflow-y: auto; /* Scrollable contents if viewport is shorter than content. */
+}
+
+.sidebar a {
+  color: #4078c0;
+  text-decoration: none;
+}
+
+.sidebar a:hover,
+.sidebar a:active {
+  text-decoration: underline;
+}
+
+.sidebar > ul {
+	margin-bottom:10px;
+}
+
+.sidebar ul ul {
+	padding:0 20px;
+}
+
+.sidebar li {
+	line-height:1em;
+}
+
+.sidebar li a {
+	font-size:0.95em;
+	line-height:1em;
+	margin-top:2px;
+	margin-bottm:0;
+	padding:0;
+}
+
+.other-content a {
+  color: #4078c0;
+  text-decoration: none;
+}
+
+/*
+ * Content
+ */
+
+[role="main"] {
+  padding-top: 58px; /* Space for fixed navbar */
+}
+
+/*
+ * Navbar
+ */
+
+.navbar {
+  padding: .2rem 1rem
+}

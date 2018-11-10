@@ -1,0 +1,68 @@
+{% extends "layout.html" %}
+
+{% block css %}
+{{ stylesheet_tag('css/upload.css') }}
+{% endblock %}
+
+{% block body %}
+{% with messages = get_flashed_messages(with_categories=true) %}
+{% if messages %}
+<div class="row">
+  <div class="col-md-12">
+    {% for category, message in messages %}
+    <div class="alert alert-{{ category }}">
+      <a class="close" title="Close" href="#" data-dismiss="alert">&times;</a>
+      {{message}}
+    </div><!-- end .alert -->
+    {% endfor %}
+  </div><!-- end col-md -->
+</div><!-- end row -->
+{% endif %}
+{% endwith %}
+
+<div class="container">
+  <div class="panel panel-default">
+    <div class="panel-body">
+
+      <small>Select files from your computer</small>
+      <form action="{{ url_for('wiki.handle_upload') }}" method="POST" enctype="multipart/form-data" id="upload-form">
+        {{ form.csrf_token }}
+        <div class="form-inline">
+          <button type="button" class="btn btn-sm btn-primary" onClick="document.getElementById('file-picker').click();">Choose</button>&nbsp;
+          {{ form.file(multiple='', style='display:none', id='file-picker') }}
+          <span id="file-number">0 file selected</span>
+          {{ form.upload(class_='ml-auto btn btn-sm btn-success', id='upload-button') }}&nbsp;
+          <button type="button" class="ml-sm btn btn-sm btn-secondary" onClick="window.parent.window.close();">Cancel</button>
+        </div>
+      </form>
+
+      <!-- Drop Zone -->
+      <small>Or drag and drop files below</small>
+      <div class="upload-dropbox" id="dropbox">
+        Just drag and drop files here
+      </div>
+
+      <!-- Progress Bar -->
+      <div class="progress" id="progress" style="display:none">
+        <div class="progress-bar" id="progress-bar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width:0%;">
+          <span class="sr-only" id="completion">0%</span>
+        </div>
+      </div>
+
+      <!-- Upload Finished -->
+      <h5>Selected files</h5>
+      <ul class="list-group" id="selected-files">
+      </ul>
+    </div>
+  </div>
+</div> <!-- /container -->
+
+{% endblock %}
+
+{% block js %}
+<script type="text/javascript">
+  var wiki_group = '{{ wiki_group }}';
+  var wiki_page_id = '{{ wiki_page_id }}';
+</script>
+{{ javascript_tag('js/upload.js') }}
+{% endblock %}

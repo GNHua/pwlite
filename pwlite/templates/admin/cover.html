@@ -1,0 +1,49 @@
+
+{% extends "layout.html" %}
+
+{% block css %}
+{{ stylesheet_tag('css/cover.css') }}
+{% endblock %}
+
+{% block body_class %}
+text-center
+{% endblock %}
+
+{% block body %}
+<div class="cover-container d-flex w-100 h-100 p-3 mx-auto flex-column">
+  <header class="masthead mb-auto">
+    <div class="inner">
+      <h3 class="masthead-brand">Project Wiki <i><small>lite</small></i></h3>
+      <nav class="nav nav-masthead justify-content-center">
+        <div class="dropdown">
+          <a class="nav-link dropdown-toggle active" href="#" id="dropdown01" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Wiki Groups</a>
+          <div class="dropdown-menu" aria-labelledby="dropdown01">
+            {% for wiki_group in active_wiki_groups %}
+            <a class="dropdown-item" href="{{ url_for('wiki.home', wiki_group=wiki_group.db_name) }}">{{ wiki_group.name }}</a>
+            {% endfor %}
+          </div>
+        </div>
+      </nav>
+    </div>
+  </header>
+
+  <main role="main" class="inner cover">
+    <h1 class="cover-heading">Welcome</h1>
+    <p class="lead">The world is our campus.</p>
+    <p class="lead">
+      <a href="#" class="btn btn-lg btn-secondary">Learn more</a>
+    </p>
+  </main>
+
+  <footer class="mastfoot mt-auto">
+    <div class="inner">
+      {# TODO: switch to Project Wiki lite repo #}
+      <p>
+        <a href="{{ url_for('admin.super_admin') }}">Super admin</a>
+        <br>
+        <a href="https://github.com/GNHua/Project-Wiki">Project Wiki <i><small>lite</small></i></a>, created by <a href="https://github.com/GNHua">Hua</a>.
+      </p>
+    </div>
+  </footer>
+</div>
+{% endblock %}

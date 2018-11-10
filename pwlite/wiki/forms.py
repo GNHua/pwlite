@@ -1,0 +1,36 @@
+# -*- coding: utf-8 -*-
+"""Wiki forms."""
+from flask_wtf import FlaskForm
+from wtforms import TextAreaField, SubmitField, IntegerField, FileField, StringField
+from wtforms.validators import DataRequired
+
+
+class WikiEditForm(FlaskForm):
+    textArea = TextAreaField('Edit')
+    submit = SubmitField('Save Changes')
+    current_version = IntegerField('Current version')
+
+
+class UploadForm(FlaskForm):
+    file = FileField('File')
+    upload = SubmitField('Upload')
+
+
+class RenameForm(FlaskForm):
+    new_title = StringField(
+        'New page title',
+        validators=[
+            DataRequired()
+        ]
+    )
+    submit = SubmitField('Rename')
+
+
+class SearchForm(FlaskForm):
+    search = StringField('Search')
+    submit = SubmitField('Search')
+
+
+class KeyPageEditForm(FlaskForm):
+    textArea = TextAreaField('Edit')
+    submit = SubmitField('Save Changes')

@@ -1,0 +1,39 @@
+<button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarsExample04" aria-controls="navbarsExample04" aria-expanded="false" aria-label="Toggle navigation">
+  <span class="navbar-toggler-icon"></span>
+</button>
+
+<div class="collapse navbar-collapse" id="navbarsExample04">
+  <ul class="navbar-nav ml-auto">
+    {% if wiki_page %}
+    <li class="nav-item">
+      <a class="nav-link" href="{{ url_for('wiki.edit', wiki_page_id=wiki_page.id) }}">Edit</a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" href="javascript:upload_file('{{ wiki_group }}','{{ wiki_page.id }}')">Upload</a>
+    </li>
+    <li class="nav-item dropdown">
+      <a class="nav-link dropdown-toggle" href="#" id="Utilities" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Utilities</a>
+      <div class="dropdown-menu" aria-labelledby="Utilities">
+        <a class="dropdown-item" href="{{ url_for('wiki.reference', wiki_page_id=wiki_page.id) }}">References</a>
+        {% if wiki_page.title != 'Home' %}
+        <a class="dropdown-item" href="{{ url_for('wiki.rename', wiki_page_id=wiki_page.id) }}">Rename</a>
+        {% endif %}
+        <a class="dropdown-item" href="{{ url_for('wiki.history', wiki_page_id=wiki_page.id) }}">History</a>
+        <a class="dropdown-item" href="{{ url_for('wiki.markdown_instructions') }}">Markdown</a>
+      </div>
+    </li>
+    {% endif %}
+    <li class="nav-item dropdown">
+      <a class="nav-link dropdown-toggle" href="#" id="Wiki" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Wiki</a>
+      <div class="dropdown-menu" aria-labelledby="Wiki">
+        <a class="dropdown-item" href="{{ url_for('admin.home') }}">Cover</a>
+        <a class="dropdown-item" href="{{ url_for('wiki.home') }}">Home</a>
+        <a class="dropdown-item" href="#">Admin</a>
+      </div>
+    </li>
+  </ul>
+  <form class="form-inline my-2 my-md-0" method="POST" action="{{ url_for('wiki.search') }}">
+    {{ search_form.csrf_token }}
+    {{ search_form.search(class_='form-control', placeholder='Search') }}
+  </form>
+</div>

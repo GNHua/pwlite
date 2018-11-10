@@ -1,0 +1,101 @@
+{% extends 'wiki/layout.html' %}
+
+{% block header %}
+Search
+{% endblock %}
+
+{% block other_content %}
+<div class="row">
+  <div class="col-lg-4">
+    <form method="Post">
+      {{ form.csrf_token }}
+      <div class="input-group mb-3">
+        {% set attribs = {'placeholder':'Search for...', 'aria-label':'Search for...', 'aria-describedby': 'button-addon'}  %}
+        {{ form.search(class_='form-control', **attribs) }}
+        <div class="input-group-append">
+          {{ form.submit(class_='btn btn-primary', value='Go!', id='button-addon') }}
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+
+{% if wiki_pages %}
+<div id="search-result">
+  <h4>Search Results for <i>"{{ form.search.data }}"</i></h4>
+  <table class="table table-sm">
+    <thead>
+      <tr>
+        <th scope="col">#</th>
+        <th scope="col">Title</th>
+        <th scope="col">Last Edit</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for wiki_page in wiki_pages %}
+      <tr>
+        <th scope="row">{{ loop.index }}</th>
+        <td><a href="{{ url_for('wiki.page', wiki_page_id=wiki_page.id) }}">{{ wiki_page.title }}</a></td>
+        <td>{{ format_datetime(wiki_page.modified_on) }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+{% macro page_item(href, label, status='', aria='') -%}
+<li class="page-item {{ status }}">
+  {% if aria %}
+  <a class="page-link" href="{{ href }}" aria-label="{{ aria }}">{{ label | safe }}</a>
+  {% else %}
+  <a class="page-link" href="{{ href }}">{{ label }}</a>
+  {% endif %}
+</li>
+{%- endmacro %}
+
+{% macro page_item_link(page_number, label, status='', aria='') -%}
+{{ page_item(url_for('wiki.search', search=form.search.data, page=page_number), label, status=status, aria=aria) }}
+{%- endmacro %}
+
+<nav aria-label="Search Results">
+  <ul class="pagination justify-content-center">
+
+    {# Previous page #}
+    {% if current_page_number != 1 %}
+    {{ page_item_link(current_page_number-1, label='<span aria-hidden="true">&laquo;</span><span class="sr-only">Previous</span>', aria='Previous') }}
+    {% else %}
+    {{ page_item_link(current_page_number-1, label='<span aria-hidden="true">&laquo;</span><span class="sr-only">Previous</span>', status='disabled', aria='Previous') }}
+    {% endif %}
+
+    {% if start_page_number > 3 %}
+    {{ page_item_link(page_number=1, label='1') }}
+    {{ page_item_link(page_number=2, label='2') }}
+    {{ page_item(href='#', label='...', status='disabled') }}
+    {% endif %}
+
+    {% for i in range(start_page_number, end_page_number+1) %}
+    {% if current_page_number == i %}
+    {{ page_item_link(page_number=i, label=i, status='active') }}
+    {% else %}
+    {{ page_item_link(page_number=i, label=i) }}
+    {% endif %}
+    {% endfor %}
+
+    {% if end_page_number < total_page_number-3 %}
+    {{ page_item(href='#', label='...', status='disabled') }}
+    {{ page_item_link(page_number=total_page_number-1, label=total_page_number-1) }}
+    {{ page_item_link(page_number=total_page_number, label=total_page_number) }}
+    {% endif %}
+
+    {# Next page #}
+    {% if current_page_number != total_page_number %}
+    {{ page_item_link(current_page_number+1, label='<span aria-hidden="true">&raquo;</span><span class="sr-only">Next</span>', aria='Next') }}
+    {% else %}
+    {{ page_item_link(current_page_number+1, label='<span aria-hidden="true">&raquo;</span><span class="sr-only">Next</span>', status='disabled', aria='Next') }}
+    {% endif %}
+
+  </ul>
+</nav>
+{% endif %}
+<br><br><br><br><br><br><br><br>
+{% endblock %}

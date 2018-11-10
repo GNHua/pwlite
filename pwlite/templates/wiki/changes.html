@@ -1,0 +1,29 @@
+{% extends 'wiki/layout.html' %}
+
+{% block header %}
+Search
+{% endblock %}
+
+{% block other_content %}
+{% if wiki_changes %}
+<table class="table table-sm">
+  <thead>
+    <tr>
+      <th scope="col">#</th>
+      <th scope="col">Title</th>
+      <th scope="col">Last Edit</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for wiki_change in wiki_changes %}
+    <tr>
+      <th scope="row">{{ loop.index }}</th>
+      <td><a href="{{ url_for('wiki.page', wiki_page_id=wiki_page.id) }}">{{ wiki_page.title }}</a></td>
+      <td>{{ format_datetime(wiki_page.modified_on) }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endif %}
+<br><br><br><br><br><br><br><br>
+{% endblock %}
