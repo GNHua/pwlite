@@ -2,7 +2,7 @@
 """Wiki section, including wiki pages for each group."""
 from flask import Blueprint, g, render_template, redirect, url_for, \
     request, flash, send_from_directory, abort, current_app
-from datetime import datetime, date
+from datetime import datetime, timezone
 import os
 import math
 
@@ -14,7 +14,7 @@ from pwlite.models import WikiPage, WikiPageIndex, WikiKeypage, \
 from pwlite.wiki.forms import WikiEditForm, UploadForm, RenameForm, \
     SearchForm, KeyPageEditForm
 from pwlite.diff import make_patch
-from pwlite.settings import DB_PATH
+from pwlite.settings import DB_PATH, TIMEZONE
 from pwlite.markdown import render_wiki_page, render_wiki_file
 
 blueprint = Blueprint('wiki', __name__, static_folder='../static', url_prefix='/<wiki_group>')
@@ -75,10 +75,19 @@ def inject_wiki_group_data():
              .limit(5))
     wiki_changes = query.execute()
 
-    if wiki_changes[0].modified_on.date() == date.today():
-        latest_change_time = wiki_changes[0].modified_on.strftime('[%H:%M]')
+    latest_change_time = (wiki_changes[0]
+                          .modified_on
+                          .replace(tzinfo=timezone.utc)
+                          .astimezone(TIMEZONE))
+    now = (datetime
+           .utcnow()
+           .replace(tzinfo=timezone.utc)
+           .astimezone(TIMEZONE))
+
+    if latest_change_time.date() == now.date():
+        latest_change_time = latest_change_time.strftime('[%H:%M]')
     else:
-        latest_change_time = wiki_changes[0].modified_on.strftime('[%b %d]')
+        latest_change_time = latest_change_time.strftime('[%b %d]')
 
     return dict(
         wiki_group=g.wiki_group,
