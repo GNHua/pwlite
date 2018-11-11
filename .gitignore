@@ -37,3 +37,6 @@ env/
 
 # mathjax
 pwlite/static/js/MathJax/
+
+# log
+*.log

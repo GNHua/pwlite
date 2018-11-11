@@ -54,7 +54,6 @@ class WikiFilePattern(Pattern):
         try:
             wiki_file = WikiFile.get_by_id(int(wiki_file_id))
         except WikiFile.DoesNotExist:
-            print('wiki file not exist')
             return
 
         return render_wiki_file(

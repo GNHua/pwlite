@@ -42,5 +42,4 @@ def calc_page_num(current_page_number, total_page_number):
 
 def format_datetime(datetime):
     dt = datetime.replace(tzinfo=timezone.utc).astimezone(TIMEZONE)
-    print(dt)
     return dt.strftime('%Y-%m-%d %H:%M:%S ') + dt.tzname()
