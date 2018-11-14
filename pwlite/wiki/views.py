@@ -248,18 +248,18 @@ def handle_upload():
         )
 
         (WikiPageIndex
-        .update(markdown=wiki_page.markdown+file_markdown)
-        .where(WikiPageIndex.docid==wiki_page.id)
-        .execute())
+         .update(markdown=wiki_page.markdown+file_markdown)
+         .where(WikiPageIndex.docid==wiki_page.id)
+         .execute())
 
         (WikiPage
-        .update(
-            markdown=WikiPage.markdown+file_markdown,
-            html=WikiPage.html+file_html,
-            current_version=WikiPage.current_version+1,
-            modified_on=datetime.utcnow())
-        .where(WikiPage.id==wiki_page.id)
-        .execute())
+         .update(
+             markdown=WikiPage.markdown+file_markdown,
+             html=WikiPage.html+file_html,
+             current_version=WikiPage.current_version+1,
+             modified_on=datetime.utcnow())
+         .where(WikiPage.id==wiki_page.id)
+         .execute())
 
     return ''
 
@@ -313,26 +313,39 @@ def rename(wiki_page_id):
 
                 # update the markdown of referencing wiki page 
                 query = (WikiPage
-                        .select(WikiPage.id, WikiPage.markdown, WikiPage.html)
-                        .join(WikiReference, on=WikiReference.referencing)
-                        .where(WikiReference.referenced == wiki_page))
+                         .select(WikiPage.id, WikiPage.markdown, WikiPage.html)
+                         .join(WikiReference, on=WikiReference.referencing)
+                         .where(WikiReference.referenced==wiki_page))
                 wiki_referencing_pages = query.execute()
                 for ref in wiki_referencing_pages:
-                    ref.markdown = ref.markdown.replace(old_markdown, new_markdown)
-                    ref.html = ref.html.replace(old_html, new_html)
-                    ref.save()
+                    new_markdown_content = ref.markdown.replace(old_markdown, new_markdown)
+                    (WikiPageIndex
+                     .update(markdown=new_markdown_content)
+                     .where(WikiPageIndex.docid==ref.id)
+                     .execute())
+
+                    (WikiPage
+                     .update(
+                         markdown=new_markdown_content,
+                         html=ref.html.replace(old_html, new_html))
+                     .where(WikiPage.id==ref.id)
+                     .execute())
 
                 # update the diff of related wiki page versions
                 query = (WikiPageVersion
-                        .select(WikiPageVersion.diff)
-                        .where(WikiPageVersion.diff.contains(old_markdown)))
+                         .select(WikiPageVersion.id, WikiPageVersion.diff)
+                         .where(WikiPageVersion.diff.contains(old_markdown)))
                 wiki_page_versions = query.execute()
                 for pv in wiki_page_versions:
-                    pv.diff = pv.diff.replace(old_markdown, new_markdown)
-                    pv.save()
+                    (WikiPageVersion
+                     .update(diff=pv.diff.replace(old_markdown, new_markdown))
+                     .where(WikiPageVersion.id==pv.id)
+                     .execute())
 
-                wiki_page.title = new_title
-                wiki_page.save()
+                (WikiPage
+                 .update(title=new_title)
+                 .where(WikiPage.id==wiki_page.id)
+                 .execute())
 
             return redirect(url_for('.page', wiki_page_id=wiki_page.id))
 

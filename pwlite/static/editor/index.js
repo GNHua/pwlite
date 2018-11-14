@@ -201,7 +201,6 @@ function start() {
     }
     update(editor);
     editor.focus();
-    document.getElementById('fileInput').addEventListener('change', openFile, false);
 }
 
 // TODO: decide if pop-up should stay when redirect
