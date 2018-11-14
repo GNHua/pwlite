@@ -382,14 +382,12 @@ def search():
 
     if search_keyword and not search_keyword.isspace():
         query = (WikiPage
-                 .select(
-                     WikiPage.id, WikiPage.title, WikiPage.modified_on,
-                     WikiPageIndex.bm25(1.0, 3.0, 2.0))
+                 .select(WikiPage.id, WikiPage.title, WikiPage.modified_on)
                  .join(
                      WikiPageIndex,
                      on=(WikiPage.id==WikiPageIndex.docid))
                  .where(WikiPageIndex.match(search_keyword))
-                 .order_by(WikiPageIndex.bm25(1.0, 3.0, 2.0))
+                 .order_by(WikiPageIndex.rank(2.0, 1.0))
                  .paginate(kwargs['current_page_number'], paginate_by=100))
         kwargs['wiki_pages'] = query.execute()
         count = query.count()

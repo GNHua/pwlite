@@ -5,7 +5,7 @@ import os
 
 from pwlite import commands, admin, wiki
 from pwlite.extensions import csrf_protect, db
-from pwlite.models import WikiGroup
+from pwlite.models import WikiGroup, WikiPage, WikiPageIndex
 
 
 def create_app(config_object='pwlite.settings'):
@@ -55,7 +55,8 @@ def register_shellcontext(app):
         """Shell context objects."""
         return {
             'db': db,
-            'WikiPage': wiki.models.WikiPage}
+            'WikiPage': WikiPage,
+            'WikiPageIndex': WikiPageIndex}
 
     app.shell_context_processor(shell_context)
 
