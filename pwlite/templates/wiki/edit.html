@@ -58,6 +58,11 @@
     {{ javascript_tag('editor/lib/rawinflate.js') }}
     {{ javascript_tag('editor/lib/rawdeflate.js') }}
     {{ javascript_tag('editor/lib/sweetalert.min.js') }}
+    <script
+    src="https://code.jquery.com/jquery-3.3.1.min.js"
+    integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
+    crossorigin="anonymous"></script>
+    <script>window.jQuery || document.write(`<script src="{{ url_for('static', filename='js/jquery-3.3.1.min.js') }}"><\/script>`)</script>
     <script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML' async></script>
     <script>window.MathJax || document.write(`<script src="{{ url_for('static', filename='js/MathJax/MathJax.js', config='TeX-MML-AM_CHTML') }}"><\/script>`)</script>
     <script type="text/x-mathjax-config">
@@ -69,10 +74,5 @@
       });
     </script>
     {{ javascript_tag('editor/index.js') }}
-    <script
-      src="https://code.jquery.com/jquery-3.3.1.min.js"
-      integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
-      crossorigin="anonymous"></script>
-    <script>window.jQuery || document.write(`<script src="{{ url_for('static', filename='js/jquery-3.3.1.min.js') }}"><\/script>`)</script>
   </body>
 </html>

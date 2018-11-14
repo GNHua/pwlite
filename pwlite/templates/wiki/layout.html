@@ -44,16 +44,6 @@
 {% endblock %}
 
 {% block js %}
-<script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML' async></script>
-<script>window.MathJax || document.write(`<script src="{{ url_for('static', filename='js/MathJax/MathJax.js', config='TeX-MML-AM_CHTML') }}"></script>`)</script>
-<script type="text/x-mathjax-config">
-  MathJax.Hub.Config({
-    tex2jax: {
-      inlineMath: [ ['$','$'], ["\\(","\\)"] ],
-      processEscapes: true
-    }
-  });
-</script>
 <script type="text/javascript">
   var d = document.getElementById('toc');
   var uls = d.getElementsByTagName('ul');
@@ -70,5 +60,15 @@
   function upload_file(wiki_group, wiki_page_id) {
      window.open('/'+wiki_group+'/upload'+'/'+wiki_page_id, 'Attach', 'width=600, height=800, menubar=no, scrollbars=yes');
   }
+</script>
+<script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML' async></script>
+<script>window.MathJax || document.write(`<script src="{{ url_for('static', filename='js/MathJax/MathJax.js', config='TeX-MML-AM_CHTML') }}"></script>`)</script>
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+      processEscapes: true
+    }
+  });
 </script>
 {% endblock js %}
