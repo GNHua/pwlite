@@ -33,10 +33,10 @@ env/
 .env
 
 # Development database
-*.db
+db/
 
 # mathjax
-pwlite/static/js/MathJax/
+MathJax/
 
 # log
 *.log
