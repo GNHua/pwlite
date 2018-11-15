@@ -26,10 +26,9 @@
 
       <small>Select files from your computer</small>
       <form action="{{ url_for('wiki.handle_upload') }}" method="POST" enctype="multipart/form-data" id="upload-form">
-        {{ form.csrf_token }}
         <div class="form-inline">
           <button type="button" class="btn btn-sm btn-primary" onClick="document.getElementById('file-picker').click();">Choose</button>&nbsp;
-          {{ form.file(multiple='', style='display:none', id='file-picker') }}
+          {{ form.file(multiple='', class_='d-none', id='file-picker') }}
           <span id="file-number">0 file selected</span>
           {{ form.upload(class_='ml-auto btn btn-sm btn-success', id='upload-button') }}&nbsp;
           <button type="button" class="ml-sm btn btn-sm btn-secondary" onClick="window.parent.window.close();">Cancel</button>
@@ -61,8 +60,8 @@
 
 {% block js %}
 <script type="text/javascript">
-  var wiki_group = '{{ wiki_group }}';
-  var wiki_page_id = '{{ wiki_page_id }}';
+  let wiki_group = '{{ wiki_group }}';
+  let wiki_page_id = '{{ wiki_page_id }}';
 </script>
 {{ javascript_tag('js/upload.js') }}
 {% endblock %}

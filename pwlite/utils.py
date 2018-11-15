@@ -40,6 +40,5 @@ def calc_page_num(current_page_number, total_page_number):
     return start_page_number, end_page_number
 
 
-def format_datetime(datetime):
-    dt = datetime.replace(tzinfo=timezone.utc).astimezone(TIMEZONE)
-    return dt.strftime('%Y-%m-%d %H:%M:%S ') + dt.tzname()
+def convert_datetime(datetime):
+    return datetime.replace(tzinfo=timezone.utc).astimezone(TIMEZONE)

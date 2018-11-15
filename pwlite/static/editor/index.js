@@ -136,7 +136,7 @@ function save() {
 }
 
 function upload() {
-    // TODO: upload files to database
+    document.getElementById('file-picker').click();
 }
 
 function toggleNightMode(button) {

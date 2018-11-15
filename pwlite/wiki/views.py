@@ -2,19 +2,19 @@
 """Wiki section, including wiki pages for each group."""
 from flask import Blueprint, g, render_template, redirect, url_for, \
     request, flash, send_from_directory, abort, current_app
-from datetime import datetime, timezone
+from datetime import datetime
 import os
 import math
 
 from pwlite.extensions import db, markdown
 from pwlite.utils import flash_errors, xstr, get_object_or_404, \
-    calc_page_num, format_datetime
+    calc_page_num, convert_datetime
 from pwlite.models import WikiPage, WikiPageIndex, WikiKeypage, \
     WikiPageVersion, WikiReference, WikiFile
 from pwlite.wiki.forms import WikiEditForm, UploadForm, RenameForm, \
     SearchForm, KeyPageEditForm
 from pwlite.diff import make_patch
-from pwlite.settings import DB_PATH, TIMEZONE
+from pwlite.settings import DB_PATH
 from pwlite.markdown import render_wiki_page, render_wiki_file
 
 blueprint = Blueprint('wiki', __name__, static_folder='../static', url_prefix='/<wiki_group>')
@@ -55,7 +55,8 @@ def inject_wiki_group_data():
     if g.wiki_group not in current_app.active_wiki_groups:
         return dict()
 
-    if '/edit/' in request.path or '/upload/' in request.path:
+    if request.path.startswith('/{0}/edit/'.format(g.wiki_group)) \
+        or request.path.startswith('/{0}/upload/'.format(g.wiki_group)):
         return dict(wiki_group=g.wiki_group)
 
     search_form = SearchForm()
@@ -75,14 +76,8 @@ def inject_wiki_group_data():
              .limit(5))
     wiki_changes = query.execute()
 
-    latest_change_time = (wiki_changes[0]
-                          .modified_on
-                          .replace(tzinfo=timezone.utc)
-                          .astimezone(TIMEZONE))
-    now = (datetime
-           .utcnow()
-           .replace(tzinfo=timezone.utc)
-           .astimezone(TIMEZONE))
+    latest_change_time = convert_datetime(wiki_changes[0].modified_on)
+    now = convert_datetime(datetime.utcnow())
 
     if latest_change_time.date() == now.date():
         latest_change_time = latest_change_time.strftime('[%H:%M]')
@@ -95,7 +90,7 @@ def inject_wiki_group_data():
         wiki_keypages=wiki_keypages,
         wiki_changes=wiki_changes,
         latest_change_time=latest_change_time,
-        format_datetime=format_datetime
+        convert_datetime=convert_datetime
     )
 
 
@@ -134,7 +129,7 @@ def edit(wiki_page_id):
         WikiPage.id==wiki_page_id
     )
     form = WikiEditForm()
-    # TODO: add upload form
+    upload_form = UploadForm()
 
     if form.validate_on_submit():
         if form.current_version.data == wiki_page.current_version:
@@ -185,7 +180,8 @@ def edit(wiki_page_id):
     return render_template(
         'wiki/edit.html',
         wiki_page=wiki_page,
-        form=form
+        form=form,
+        upload_form=upload_form
     )
 
 
@@ -204,6 +200,7 @@ def upload(wiki_page_id):
 def handle_upload():
     form = request.form
     wiki_page_id = int(form.get('wiki_page_id', None))
+    upload_from_upload_page = form.get('upload_page', None)
 
     file_markdown, file_html = '', ''
     with db.atomic():
@@ -230,38 +227,40 @@ def handle_upload():
                 tostring=True
             ))
 
-        wiki_page = get_object_or_404(
-            WikiPage.select(
-                WikiPage.id,
-                WikiPage.markdown,
-                WikiPage.current_version,
-                WikiPage.modified_on),
-            WikiPage.id==wiki_page_id
-        )
+        if upload_from_upload_page:
+            wiki_page = get_object_or_404(
+                WikiPage.select(
+                    WikiPage.id,
+                    WikiPage.markdown,
+                    WikiPage.current_version,
+                    WikiPage.modified_on),
+                WikiPage.id==wiki_page_id
+            )
 
-        diff = make_patch(xstr(wiki_page.markdown), xstr(wiki_page.markdown)+file_markdown)
-        WikiPageVersion.create(
-            wiki_page=wiki_page,
-            diff=diff,
-            version=wiki_page.current_version,
-            modified_on=wiki_page.modified_on
-        )
+            diff = make_patch(xstr(wiki_page.markdown), xstr(wiki_page.markdown)+file_markdown)
+            WikiPageVersion.create(
+                wiki_page=wiki_page,
+                diff=diff,
+                version=wiki_page.current_version,
+                modified_on=wiki_page.modified_on
+            )
 
-        (WikiPageIndex
-         .update(markdown=wiki_page.markdown+file_markdown)
-         .where(WikiPageIndex.docid==wiki_page.id)
-         .execute())
+            (WikiPageIndex
+             .update(markdown=wiki_page.markdown+file_markdown)
+             .where(WikiPageIndex.docid==wiki_page.id)
+             .execute())
 
-        (WikiPage
-         .update(
-             markdown=WikiPage.markdown+file_markdown,
-             html=WikiPage.html+file_html,
-             current_version=WikiPage.current_version+1,
-             modified_on=datetime.utcnow())
-         .where(WikiPage.id==wiki_page.id)
-         .execute())
+            (WikiPage
+             .update(
+                 markdown=WikiPage.markdown+file_markdown,
+                 html=WikiPage.html+file_html,
+                 current_version=WikiPage.current_version+1,
+                 modified_on=datetime.utcnow())
+             .where(WikiPage.id==wiki_page.id)
+             .execute())
 
-    return ''
+            return ''
+    return file_markdown
 
 
 @blueprint.route('/reference/<int:wiki_page_id>')
@@ -365,15 +364,16 @@ def file(wiki_file_id):
             WikiFile.id==wiki_file_id
         )
         fn = wiki_file.name
+
     return send_from_directory(
         os.path.join(DB_PATH, g.wiki_group),
-        str(wiki_file.id),
+        str(wiki_file_id),
         as_attachment=True,
         attachment_filename=fn
     )
 
 
-# TODO: add abitrary number per page, sort by other column, such as timestamp
+# TODO: add abitrary number per page and more filters, such as date
 @blueprint.route('/search', methods=['GET', 'POST'])
 def search():
     search_keyword = request.args.get('search')

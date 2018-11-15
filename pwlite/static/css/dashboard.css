@@ -45,7 +45,7 @@
 	padding:0;
 }
 
-.other-content a {
+.other-content a:not(.btn) {
   color: #4078c0;
   text-decoration: none;
 }

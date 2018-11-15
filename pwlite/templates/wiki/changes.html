@@ -18,7 +18,7 @@ Changes
     <tr>
       <th scope="row">{{ loop.index }}</th>
       <td><a href="{{ url_for('wiki.page', wiki_page_id=wiki_change.id) }}">{{ wiki_change.title }}</a></td>
-      <td>{{ format_datetime(wiki_change.modified_on) }}</td>
+      <td>{{ convert_datetime(wiki_change.modified_on).strftime('%Y-%m-%d %H:%M:%S') }}</td>
     </tr>
     {% endfor %}
   </tbody>

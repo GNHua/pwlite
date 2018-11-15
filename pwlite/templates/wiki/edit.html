@@ -42,6 +42,10 @@
       </div>
     </div>
 
+    <form action="{{ url_for('wiki.handle_upload') }}" method="POST" enctype="multipart/form-data" class='d-none' id="upload-form">
+      {{ form.file(multiple='', id='file-picker') }}
+    </form>
+
     {{ javascript_tag('editor/lib/markdown-it.js') }}
     {{ javascript_tag('editor/lib/markdown-it-footnote.js') }}
     {{ javascript_tag('editor/lib/highlight.pack.js') }}
@@ -73,6 +77,11 @@
         }
       });
     </script>
+    <script type="text/javascript">
+      let wiki_group = '{{ wiki_group }}';
+      let wiki_page_id = '{{ wiki_page.id }}';
+    </script>
+    {{ javascript_tag('js/upload_edit.js') }}
     {{ javascript_tag('editor/index.js') }}
   </body>
 </html>

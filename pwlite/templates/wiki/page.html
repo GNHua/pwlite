@@ -15,7 +15,7 @@
 {{ wiki_page.html | safe }}
 {% endif %}
 <div align="right" style="border-top:1px solid #c9c5c5">
-  <i><small>modified on {{ format_datetime(wiki_page.modified_on) }}</small></i>
+  <i><small>modified on {{ convert_datetime(wiki_page.modified_on).strftime('%Y-%m-%d %H:%M:%S') }}</small></i>
 </div>
 <br><br><br><br><br><br><br><br>
 {% endblock %}
