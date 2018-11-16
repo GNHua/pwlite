@@ -387,8 +387,10 @@ def search():
                      WikiPageIndex,
                      on=(WikiPage.id==WikiPageIndex.docid))
                  .where(WikiPageIndex.match(search_keyword))
-                 .order_by(WikiPageIndex.rank(2.0, 1.0))
+                 .order_by(WikiPageIndex.rank(2.0, 1.0), WikiPage.modified_on.desc())
                  .paginate(kwargs['current_page_number'], paginate_by=100))
+        # TODO: add title-only search
+        # query = query.where(WikiPage.title.contains(search_keyword))
         kwargs['wiki_pages'] = query.execute()
         count = query.count()
         kwargs['total_page_number'] = math.ceil(count / 100)

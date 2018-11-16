@@ -223,12 +223,12 @@ class TestWikiPage:
             )
 
         query = (WikiPage
-                 .select(WikiPage, WikiPageIndex.bm25(1.0, 3.0, 2.0))
+                 .select(WikiPage, WikiPageIndex.bm25(3.0, 2.0))
                  .join(
                      WikiPageIndex,
                      on=(WikiPage.id == WikiPageIndex.docid))
                  .where(WikiPageIndex.match('foo bar'))
-                 .order_by(WikiPageIndex.bm25(1.0, 3.0, 2.0)))
+                 .order_by(WikiPageIndex.bm25(3.0, 2.0)))
         wiki_page = query.execute()[0]
         count = query.count()
 
