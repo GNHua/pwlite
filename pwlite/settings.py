@@ -18,6 +18,7 @@ DEBUG = ENV == 'development'
 SECRET_KEY = env.str('SECRET_KEY')
 DEBUG_TB_ENABLED = DEBUG
 DEBUG_TB_INTERCEPT_REDIRECTS = False
+WTF_CSRF_TIME_LIMIT = 100000000
 DATA_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir, 'data'))
 DB_PATH = os.path.join(DATA_PATH, 'db')
 ADMIN_DB = '_admin.db'
