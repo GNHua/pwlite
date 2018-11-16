@@ -50,6 +50,9 @@ class WikiFilePattern(Pattern):
 
     def handleMatch(self, m):
         _, _, wiki_file_type, wiki_file_id, wh, w, h = [m.group(i) for i in range(7)]
+        w = w or 0
+        h = h or 0
+        w, h = int(w), int(h)
 
         try:
             wiki_file = WikiFile.get_by_id(int(wiki_file_id))
@@ -115,10 +118,10 @@ def render_wiki_file(
     )
     if wiki_file_type == 'image':
         el = etree.Element('img', attrib={'src': link})
-        if w != 0:
-            el.attrib['width'] = w
-        if h != 0:
-            el.attrib['height'] = h
+        if w:
+            el.attrib['width'] = str(w)
+        if h:
+            el.attrib['height'] = str(h)
     elif wiki_file_type == 'file':
         sub_el = etree.Element('img', attrib={
             'alt': 'file icon',
