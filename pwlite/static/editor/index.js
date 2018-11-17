@@ -1,31 +1,3 @@
-var URL = window.URL || window.webkitURL || window.mozURL || window.msURL;
-navigator.saveBlob = navigator.saveBlob || navigator.msSaveBlob || navigator.mozSaveBlob || navigator.webkitSaveBlob;
-window.saveAs = window.saveAs || window.webkitSaveAs || window.mozSaveAs || window.msSaveAs;
-
-// Because highlight.js is a bit awkward at times
-var languageOverrides = {
-    js: 'javascript',
-    html: 'xml'
-};
-
-var livestyles;
-
-var md = markdownit({
-        html: true,
-        highlight: function(code, lang) {
-            if (languageOverrides[lang]) lang = languageOverrides[lang];
-            if (lang && hljs.getLanguage(lang)) {
-                try {
-                    return hljs.highlight(lang, code).value;
-                } catch (e) {}
-            }
-            return '';
-        }
-    })
-    .use(markdownitFootnote);
-
-var hashto;
-
 function update(e) {
     setOutput(e.getValue());
 
@@ -52,7 +24,7 @@ function setOutput(val) {
 
     var out = document.getElementById('out');
     var old = out.cloneNode(true);
-    out.innerHTML = md.render(val);
+    out.innerHTML = marked(val);
     MathJax.Hub.Queue(["Typeset", MathJax.Hub, "out"]);
 
     var allold = old.getElementsByTagName("*");
@@ -202,13 +174,5 @@ function start() {
     update(editor);
     editor.focus();
 }
-
-// TODO: decide if pop-up should stay when redirect
-// window.addEventListener("beforeunload", function (e) {
-//     var confirmationMessage = 'It looks like you have been editing something. '
-//                             + 'If you leave before saving, your changes will be lost.';
-//     (e || window.event).returnValue = confirmationMessage; //Gecko + IE
-//     return confirmationMessage; //Gecko + Webkit, Safari, Chrome etc.
-// });
 
 start();

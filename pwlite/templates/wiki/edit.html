@@ -46,8 +46,6 @@
       {{ upload_form.file(multiple='', id='file-picker') }}
     </form>
 
-    {{ javascript_tag('editor/lib/markdown-it.js') }}
-    {{ javascript_tag('editor/lib/markdown-it-footnote.js') }}
     {{ javascript_tag('editor/lib/highlight.pack.js') }}
     {{ javascript_tag('editor/codemirror/lib/codemirror.js') }}
     {{ javascript_tag('editor/codemirror/overlay.js') }}
@@ -81,6 +79,7 @@
       let wiki_group = '{{ wiki_group }}';
       let wiki_page_id = '{{ wiki_page.id }}';
     </script>
+    {{ javascript_tag('js/marked.js') }}
     {{ javascript_tag('js/upload_edit.js') }}
     {{ javascript_tag('editor/index.js') }}
   </body>
