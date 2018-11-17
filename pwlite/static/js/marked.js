@@ -927,7 +927,7 @@
       }
     } else if (type === 'file' && wh == null ) {
       var out = '<a href="/' + wiki_group + '/file/' + id
-        + '"><img alt="file icon" src="/static/image/file-icon.png" width=20 height=20>' 
+        + '"><img alt="file icon" src="/static/images/file-icon.png" width=20 height=20>' 
         + text + '</a>';
     } else {
       var out = text;

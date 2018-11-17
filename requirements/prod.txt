@@ -23,6 +23,8 @@ python-dotenv==0.9.1
 # Markdown
 Markdown==2.6.8
 pymdown-extensions==3.5
+mistune==0.8.4
+mistune-contrib==0.1
 
 # WSGI server
 waitress>=1.1.0
