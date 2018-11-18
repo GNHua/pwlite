@@ -26,23 +26,27 @@
 }
 
 .sidebar > ul {
-	margin-bottom:10px;
+  margin-bottom:10px;
+}
+
+.sidebar ul {
+  list-style: inherit;
 }
 
 .sidebar ul ul {
-	padding:0 20px;
+  padding:0 20px;
 }
 
 .sidebar li {
-	line-height:1em;
+  line-height:1.2em;
 }
 
 .sidebar li a {
-	font-size:0.95em;
-	line-height:1em;
-	margin-top:2px;
-	margin-bottm:0;
-	padding:0;
+  font-size:0.95em;
+  line-height:1em;
+  margin-top:2px;
+  margin-bottm:0;
+  padding:0;
 }
 
 .other-content a:not(.btn) {
