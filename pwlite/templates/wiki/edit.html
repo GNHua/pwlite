@@ -33,10 +33,11 @@
     <div id="navbar">
       <div id="navcontent">
         <p id="title" class="left">{{ wiki_page.title }}</p>
-        <p id="exitbutton" title="exit" class="navbutton right" onclick="go_to_wiki_page('{{ wiki_group }}', {{ wiki_page.id }})"><i class="material-icons">exit_to_app</i></p>
+        <p id="exitbutton" title="exit" class="navbutton right" onclick="go_back()"><i class="material-icons">exit_to_app</i></p>
         <p id="spellbutton" title="Spell Check" class="navbutton right selected" onclick="toggleSpellCheck(this)"><i class="material-icons">spellcheck</i></p>
         <p id="readbutton" title="Reading Mode" class="navbutton right" onclick="toggleReadMode(this)"><i class="material-icons">chrome_reader_mode</i></p>
         <p id="nightbutton" title="Night Mode" class="navbutton right" onclick="toggleNightMode(this)"><i class="material-icons">invert_colors</i></p>
+        <p id="rendermathbuttun" title="Render Math" class="navbutton right"><i class="material-icons" onclick="renderMath()">cached</i></p>
         <p id="uploadbutton" title="Upload" class="navbutton right"><i class="material-icons" onclick="upload()">file_upload</i></p>
         <p id="browsersavebutton" title="Save" class="navbutton right" onclick="save()"><i class="material-icons">save</i></p>
       </div>

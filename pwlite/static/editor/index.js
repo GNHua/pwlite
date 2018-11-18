@@ -1,3 +1,5 @@
+let renderMathFlag = false;
+
 function update(e) {
     setOutput(e.getValue());
 
@@ -25,7 +27,10 @@ function setOutput(val) {
     var out = document.getElementById('out');
     var old = out.cloneNode(true);
     out.innerHTML = marked(val);
-    MathJax.Hub.Queue(["Typeset", MathJax.Hub, "out"]);
+    if (renderMathFlag) {
+        MathJax.Hub.Queue(["Typeset", MathJax.Hub, "out"]);
+        renderMathFlag = false;
+    }
 
     var allold = old.getElementsByTagName("*");
     if (allold === undefined) return;
@@ -127,8 +132,13 @@ function toggleSpellCheck(button) {
     document.body.classList.toggle('no-spellcheck');
 }
 
-function go_to_wiki_page(wiki_group, wiki_page_id) {
+function go_back() {
     location.href = `/${wiki_group}/page/${wiki_page_id}`;
+}
+
+function renderMath() {
+    renderMathFlag = true;
+    update(editor);
 }
 
 function processQueryParams() {
