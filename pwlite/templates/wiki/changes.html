@@ -14,7 +14,7 @@ Changes
     </tr>
   </thead>
   <tbody>
-    {% for wiki_change in wiki_changes %}
+    {% for wiki_change in wiki_more_changes %}
     <tr>
       <th scope="row">{{ loop.index }}</th>
       <td><a href="{{ url_for('wiki.page', wiki_page_id=wiki_change.id) }}">{{ wiki_change.title }}</a></td>

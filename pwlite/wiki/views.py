@@ -426,11 +426,15 @@ def keypage_edit():
     form = KeyPageEditForm(textArea='\n'.join(keypage_titles))
 
     if form.validate_on_submit():
+        wiki_pages = list()
         new_titles = form.textArea.data.splitlines()
-        query = (WikiPage
-                 .select(WikiPage.id, WikiPage.title)
-                 .where(WikiPage.title.in_(new_titles)))
-        wiki_pages = [(wiki_page,) for wiki_page in query.execute()]
+        for new_title in new_titles:
+            wiki_page = (WikiPage
+                         .select(WikiPage.id, WikiPage.title)
+                         .where(WikiPage.title==new_title)
+                         .execute())
+            if wiki_page:
+                wiki_pages.append((wiki_page[0],))
 
         WikiKeypage.drop_table(safe=True)
         WikiKeypage.create_table(safe=True)
@@ -453,11 +457,11 @@ def changes():
              .select(WikiPage.id, WikiPage.title, WikiPage.modified_on)
              .order_by(WikiPage.modified_on.desc())
              .limit(50))
-    wiki_changes = query.execute()
+    wiki_more_changes = query.execute()
 
     return render_template(
         'wiki/changes.html',
-        wiki_changes=wiki_changes
+        wiki_more_changes=wiki_more_changes
     )
 
 # TODO: implement group admin
