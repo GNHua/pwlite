@@ -195,7 +195,6 @@ def upload(wiki_page_id):
     )
 
 
-# TODO: add upload from edit page
 @blueprint.route('/handle-upload', methods=['POST'])
 def handle_upload():
     form = request.form

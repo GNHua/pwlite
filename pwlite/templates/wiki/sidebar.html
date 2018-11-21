@@ -17,7 +17,7 @@
     {% endfor %}
   </ul>
 
-  {% if wiki_page and wiki_page.toc %}
+  {% if wiki_page and '<li>' in wiki_page.toc %}
   <div id="toc">
     <strong>Table of contents</strong>
     {{ wiki_page.toc | safe }}
