@@ -2,7 +2,7 @@
 
 {% block css %}
 {{ super() }}
-<link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.6.4/css/bootstrap-datepicker.standalone.min.css" rel="stylesheet"/>
+{{ stylesheet_tag('css/bootstrap-datepicker.min.css') }}
 {% endblock css %}
 
 {% block header %}
@@ -53,92 +53,17 @@ Search
   </table>
 </div>
 
-{% macro page_item(href, label, status='', aria='') -%}
-<li class="page-item {{ status }}">
-  {% if aria %}
-  <a class="page-link" href="{{ href }}" aria-label="{{ aria }}">{{ label | safe }}</a>
-  {% else %}
-  <a class="page-link" href="{{ href }}">{{ label }}</a>
-  {% endif %}
-</li>
+{% macro my_url_for(page_number) -%}
+{{ url_for('wiki.search', search=form.search.data, page=page_number) }}
 {%- endmacro %}
 
-{% macro page_item_link(page_number, label, status='', aria='') -%}
-{{ page_item(url_for('wiki.search', search=form.search.data, page=page_number), label, status=status, aria=aria) }}
-{%- endmacro %}
-
-<nav aria-label="Search Results">
-  <ul class="pagination justify-content-center">
-
-    {# Previous page #}
-    {% if current_page_number != 1 %}
-    {{ page_item_link(current_page_number-1, label='<span aria-hidden="true">&laquo;</span><span class="sr-only">Previous</span>', aria='Previous') }}
-    {% else %}
-    {{ page_item_link(current_page_number-1, label='<span aria-hidden="true">&laquo;</span><span class="sr-only">Previous</span>', status='disabled', aria='Previous') }}
-    {% endif %}
-
-    {% if start_page_number > 3 %}
-    {{ page_item_link(page_number=1, label='1') }}
-    {{ page_item_link(page_number=2, label='2') }}
-    {{ page_item(href='#', label='...', status='disabled') }}
-    {% endif %}
-
-    {% for i in range(start_page_number, end_page_number+1) %}
-    {% if current_page_number == i %}
-    {{ page_item_link(page_number=i, label=i, status='active') }}
-    {% else %}
-    {{ page_item_link(page_number=i, label=i) }}
-    {% endif %}
-    {% endfor %}
-
-    {% if end_page_number < total_page_number-3 %}
-    {{ page_item(href='#', label='...', status='disabled') }}
-    {{ page_item_link(page_number=total_page_number-1, label=total_page_number-1) }}
-    {{ page_item_link(page_number=total_page_number, label=total_page_number) }}
-    {% endif %}
-
-    {# Next page #}
-    {% if current_page_number != total_page_number %}
-    {{ page_item_link(current_page_number+1, label='<span aria-hidden="true">&raquo;</span><span class="sr-only">Next</span>', aria='Next') }}
-    {% else %}
-    {{ page_item_link(current_page_number+1, label='<span aria-hidden="true">&raquo;</span><span class="sr-only">Next</span>', status='disabled', aria='Next') }}
-    {% endif %}
-
-  </ul>
-</nav>
+{% include 'wiki/pagination.html' %}
 {% endif %}
 <br><br><br><br><br><br><br><br>
 {% endblock other_content %}
 
 {% block js %}
 {{ super() }}
-<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.6.4/js/bootstrap-datepicker.min.js"></script>
-<script type="text/javascript">
-  $('#inputDateFrom').datepicker({
-    format: 'mm/dd/yyyy',
-    todayHighlight: true
-  });
-  $('#inputDateTo').datepicker({
-    format: 'mm/dd/yyyy',
-    todayHighlight: true
-  });
-  $('#inputDateFrom').datepicker()
-    .on('changeDate', function(e) {
-      let dateFrom = $('#inputDateFrom').datepicker('getDate');
-      let dateTo = $('#inputDateTo').datepicker('getDate');
-      if (dateTo && +dateFrom > +dateTo) {
-        $('#inputDateTo').datepicker('setDate', dateFrom);
-      }
-      $('#inputDateTo').datepicker('setStartDate', dateFrom);
-    });
-  $('#inputDateTo').datepicker()
-    .on('changeDate', function(e) {
-      let dateFrom = $('#inputDateFrom').datepicker('getDate');
-      let dateTo = $('#inputDateTo').datepicker('getDate');
-      if (dateFrom && +dateFrom > +dateTo) {
-        $('#inputDateFrom').datepicker('setDate', dateTo);
-      }
-      $('#inputDateFrom').datepicker('setEndDate', dateTo);
-    });
-</script>
+{{ javascript_tag('js/bootstrap-datepicker.min.js') }}
+{{ javascript_tag('js/datepicker.js') }}
 {% endblock js %}

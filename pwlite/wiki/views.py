@@ -372,7 +372,6 @@ def file(wiki_file_id):
     )
 
 
-# TODO: add abitrary number per page and more filters, such as date
 @blueprint.route('/search', methods=['GET', 'POST'])
 def search():
     keyword = request.args.get('keyword')
@@ -408,7 +407,12 @@ def search():
             calc_page_num(kwargs['current_page_number'], kwargs['total_page_number'])
 
     if form.validate_on_submit():
-        return redirect(url_for('.search', keyword=form.search.data, start=form.start_date.data, end=form.end_date.data))
+        return redirect(url_for(
+            '.search',
+            keyword=form.search.data,
+            start=form.start_date.data,
+            end=form.end_date.data
+        ))
 
     return render_template(
         'wiki/search.html',
@@ -479,9 +483,48 @@ def changes():
 def admin():
     return ''
 
-# TODO: view all wiki pages
+
+@blueprint.route('/all-pages')
+def all_pages():
+    kwargs = dict(current_page_number=request.args.get('page', default=1, type=int))
+    query = (WikiPage
+             .select(WikiPage.id, WikiPage.title, WikiPage.modified_on)
+             .order_by(WikiPage.id)
+             .paginate(kwargs['current_page_number'], paginate_by=100))
+
+    kwargs['wiki_pages'] = query.execute()
+    count = query.count()
+    kwargs['total_page_number'] = math.ceil(count / 100)
+    kwargs['start_page_number'], kwargs['end_page_number'] = \
+        calc_page_num(kwargs['current_page_number'], kwargs['total_page_number'])
+
+    return render_template(
+        'wiki/all_pages.html',
+        **kwargs
+    )
+
 # TODO: delete wiki pages
-# TODO: view all wiki files
+
+
+@blueprint.route('/all-files')
+def all_files():
+    kwargs = dict(current_page_number=request.args.get('page', default=1, type=int))
+    query = (WikiFile
+             .select()
+             .order_by(WikiFile.id)
+             .paginate(kwargs['current_page_number'], paginate_by=100))
+
+    kwargs['wiki_files'] = query.execute()
+    count = query.count()
+    kwargs['total_page_number'] = math.ceil(count / 100)
+    kwargs['start_page_number'], kwargs['end_page_number'] = \
+        calc_page_num(kwargs['current_page_number'], kwargs['total_page_number'])
+
+    return render_template(
+        'wiki/all_files.html',
+        **kwargs
+    )
+
 # TODO: delete wiki files
 
 

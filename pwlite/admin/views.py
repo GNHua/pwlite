@@ -110,7 +110,7 @@ def activate(wiki_group):
             wiki_group.db_name for wiki_group in query.execute()
         ]
     except WikiGroup.DoesNotExist:
-        pas
+        pass
     return redirect(url_for('.super_admin'))
 
 

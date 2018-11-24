@@ -1,0 +1,37 @@
+{% extends 'wiki/layout.html' %}
+
+{% block header %}
+All Pages
+{% endblock header %}
+
+{% block other_content %}
+<table class="table table-sm">
+  <thead>
+    <tr>
+      <th scope="col">ID</th>
+      <th scope="col">Name</th>
+      <th scope="col">Type</th>
+      <th scope="col">Size (Bytes)</th>
+      <th scope="col">Uploaded on</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for wiki_file in wiki_files %}
+    <tr>
+      <th scope="row">{{ wiki_file.id }}</th>
+      <td><a href="{{ url_for('wiki.file', wiki_file_id=wiki_file.id) }}">{{ wiki_file.name }}</a></td>
+      <td>{{ wiki_file.mime_type }}</td>
+      <td>{{ wiki_file.size }}</td>
+      <td>{{ convert_utc_to_mdt(wiki_file.uploaded_on).strftime('%Y-%m-%d %H:%M:%S') }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+{% macro my_url_for(page_number) -%}
+{{ url_for('wiki.all_files', page=page_number) }}
+{%- endmacro %}
+
+{% include 'wiki/pagination.html' %}
+<br><br><br><br><br><br><br><br>
+{% endblock other_content %}
