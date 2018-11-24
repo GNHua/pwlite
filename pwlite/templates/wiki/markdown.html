@@ -1,7 +1,7 @@
 {% extends 'wiki/layout.html' %}
 {% block header %}
 Markdown Instructions
-{% endblock %}
+{% endblock header %}
 
 {% block toc %}
 <div class="toc">
@@ -55,7 +55,7 @@ Markdown Instructions
     </li>
   </ul>
 </div>
-{% endblock %}
+{% endblock toc %}
 
 {% block content %}
 <p>The original content of this page is pulled from <a href="https://github.com/adam-p/markdown-here/wiki/Markdown-Here-Cheatsheet">Markdown Here Cheatsheet</a>. Then some information about customization is appended. </p>
@@ -403,4 +403,4 @@ $$E = mc^2$$
 <p>Inline: $E = mc^2$</p>
 <p>Display style:</p>
 <p>$$E = mc^2$$</p>
-{% endblock %}
+{% endblock content %}

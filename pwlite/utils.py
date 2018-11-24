@@ -40,5 +40,7 @@ def calc_page_num(current_page_number, total_page_number):
     return start_page_number, end_page_number
 
 
-def convert_datetime(datetime):
+def convert_utc_to_mdt(datetime, reverse=False):
+    if reverse:
+        return datetime.replace(tzinfo=TIMEZONE).astimezone(timezone.utc)
     return datetime.replace(tzinfo=timezone.utc).astimezone(TIMEZONE)

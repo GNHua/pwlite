@@ -1,7 +1,7 @@
 
 {% extends "admin/layout.html" %}
 
-{% block header %}Super Admin{% endblock %}
+{% block header %}Super Admin{% endblock header %}
 
 {% block other_content %}
 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
@@ -60,11 +60,23 @@
       <td>{{ wiki_group.db_name }}</td>
       {% endif %}
       {{ toggle_switch(wiki_group, wiki_group.active) }}
-      {# TODO: add delete group function #}
-      <td><a href="#" class="btn btn-danger delete-db " role="button" aria-pressed="true">delete</a></td>
+      <td><a href="{{ url_for('admin.delete_group', wiki_group=wiki_group.db_name) }}" class="btn btn-danger delete-db" role="button" aria-pressed="true">delete</a></td>
     </tr>
     {% endfor %}
   </tbody>
 </table>
 {% endif %}
-{% endblock %}
+{% endblock other_content %}
+
+{% block js %}
+{{ super() }}
+<script type="text/javascript">
+  var elems = document.getElementsByClassName('delete-db');
+  var confirmIt = function (e) {
+      if (!confirm('Are you sure to delete this group?')) e.preventDefault();
+  };
+  for (var i = 0, l = elems.length; i < l; i++) {
+      elems[i].addEventListener('click', confirmIt, false);
+  }
+</script>
+{% endblock js %}

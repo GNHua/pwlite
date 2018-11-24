@@ -21,8 +21,8 @@
     {% block css %}{% endblock %}
   </head>
 
-  <body class="{% block body_class %}{% endblock %}">
-    {% block body %}{% endblock %}
+  <body class="{% block body_class %}{% endblock body_class %}">
+    {% block body %}{% endblock body %}
 
     <script
       src="https://code.jquery.com/jquery-3.3.1.min.js"
@@ -32,6 +32,6 @@
     {{ javascript_tag('js/popper.min.js') }}
     {{ javascript_tag('js/bootstrap.min.js') }}
 
-    {% block js %}{% endblock %}
+    {% block js %}{% endblock js %}
   </body>
 </html>

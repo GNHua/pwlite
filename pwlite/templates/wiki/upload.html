@@ -2,7 +2,7 @@
 
 {% block css %}
 {{ stylesheet_tag('css/upload.css') }}
-{% endblock %}
+{% endblock css %}
 
 {% block body %}
 {% with messages = get_flashed_messages(with_categories=true) %}
@@ -56,7 +56,7 @@
   </div>
 </div> <!-- /container -->
 
-{% endblock %}
+{% endblock body %}
 
 {% block js %}
 <script type="text/javascript">
@@ -64,4 +64,4 @@
   let wiki_page_id = '{{ wiki_page_id }}';
 </script>
 {{ javascript_tag('js/upload.js') }}
-{% endblock %}
+{% endblock js %}

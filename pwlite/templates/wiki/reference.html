@@ -2,7 +2,7 @@
 
 {% block header %}
 {{ 'Reference - ' + wiki_page.title }}
-{% endblock %}
+{% endblock header %}
 
 {% block other_content %}
 <a href="{{ url_for('wiki.page', wiki_page_id=wiki_page.id) }}" class="btn btn-secondary btn-sm mb-2" role="button" aria-pressed="true">❮ Back</a>
@@ -11,4 +11,4 @@
   <li class="list-group-item"><a href="{{ url_for('wiki.page', wiki_page_id=ref.id) }}">{{ ref.title }}</a></li>
   {% endfor %}
 </ul>
-{% endblock %}
+{% endblock other_content %}

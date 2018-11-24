@@ -3,12 +3,12 @@
 {% block css %}
 {{ stylesheet_tag('css/dashboard.css') }}
 {{ stylesheet_tag('editor/lib/github-markdown.css') }}
-{% endblock %}
+{% endblock css %}
 
 {% block body %}
 <nav class="navbar navbar-expand-md navbar-dark fixed-top bg-dark">
   <span class="navbar-brand">
-    {% block header %}{% endblock %}
+    {% block header %}{% endblock header %}
   </span>
   {% include 'wiki/nav.html' %}
 </nav>
@@ -33,15 +33,15 @@
       {% endif %}
       {% endwith %}
       <div class="markdown-body">
-        {% block content %}{% endblock %}
+        {% block content %}{% endblock content %}
       </div>
       <div class="other-content">
-        {% block other_content %}{% endblock %}
+        {% block other_content %}{% endblock other_content %}
       </div>
     </main>
   </div>
 </div>
-{% endblock %}
+{% endblock body %}
 
 {% block js %}
 <script type="text/javascript">
