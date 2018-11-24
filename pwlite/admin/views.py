@@ -3,6 +3,7 @@
 from flask import Blueprint, flash, redirect, render_template, request, \
     url_for, send_from_directory, current_app
 import os
+import shutil
 from peewee import IntegrityError
 
 from pwlite.utils import flash_errors, get_object_or_404
@@ -113,7 +114,15 @@ def activate(wiki_group):
     return redirect(url_for('.super_admin'))
 
 
-# TODO: delete group
+@blueprint.route('/delete-group/<wiki_group>')
+def delete_group(wiki_group):
+    # remove wiki group record in _admin.db
+    WikiGroup.delete().where(WikiGroup.db_name==wiki_group).execute()
+    # remove the database file
+    os.remove(os.path.join(DB_PATH, '{0}.db'.format(wiki_group)))
+    # remove uploaded files
+    shutil.rmtree(os.path.join(DB_PATH, wiki_group))
+    return redirect(url_for('.super_admin'))
 
 
 # TODO: maybe move these routes to another blueprint

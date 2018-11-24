@@ -2,13 +2,13 @@
 """Wiki section, including wiki pages for each group."""
 from flask import Blueprint, g, render_template, redirect, url_for, \
     request, flash, send_from_directory, abort, current_app
-from datetime import datetime
+from datetime import datetime, timedelta
 import os
 import math
 
 from pwlite.extensions import db, markdown
 from pwlite.utils import flash_errors, xstr, get_object_or_404, \
-    calc_page_num, convert_datetime
+    calc_page_num, convert_utc_to_mdt
 from pwlite.models import WikiPage, WikiPageIndex, WikiKeypage, \
     WikiPageVersion, WikiReference, WikiFile
 from pwlite.wiki.forms import WikiEditForm, UploadForm, RenameForm, \
@@ -76,8 +76,8 @@ def inject_wiki_group_data():
              .limit(5))
     wiki_changes = query.execute()
 
-    latest_change_time = convert_datetime(wiki_changes[0].modified_on)
-    now = convert_datetime(datetime.utcnow())
+    latest_change_time = convert_utc_to_mdt(wiki_changes[0].modified_on)
+    now = convert_utc_to_mdt(datetime.utcnow())
 
     if latest_change_time.date() == now.date():
         latest_change_time = latest_change_time.strftime('[%H:%M]')
@@ -90,7 +90,7 @@ def inject_wiki_group_data():
         wiki_keypages=wiki_keypages,
         wiki_changes=wiki_changes,
         latest_change_time=latest_change_time,
-        convert_datetime=convert_datetime
+        convert_utc_to_mdt=convert_utc_to_mdt
     )
 
 
@@ -375,21 +375,32 @@ def file(wiki_file_id):
 # TODO: add abitrary number per page and more filters, such as date
 @blueprint.route('/search', methods=['GET', 'POST'])
 def search():
-    search_keyword = request.args.get('search')
-    kwargs = dict(current_page_number = request.args.get('page', default=1, type=int))
-    form = SearchForm(search=search_keyword)
+    keyword = request.args.get('keyword')
+    start_date = request.args.get('start')
+    end_date = request.args.get('end')
+    kwargs = dict(current_page_number=request.args.get('page', default=1, type=int))
+    form = SearchForm(search=keyword, start_date=start_date, end_date=end_date)
 
-    if search_keyword and not search_keyword.isspace():
+    if keyword and not keyword.isspace():
+        filter = [WikiPageIndex.match(keyword)]
+        if start_date:
+            temp = datetime.strptime(start_date, '%m/%d/%Y')
+            filter.append(WikiPage.modified_on > convert_utc_to_mdt(temp, reverse=True))
+        if end_date:
+            temp = datetime.strptime(end_date, '%m/%d/%Y')+timedelta(days=1)
+            filter.append(WikiPage.modified_on < convert_utc_to_mdt(temp, reverse=True))
+
         query = (WikiPage
                  .select(WikiPage.id, WikiPage.title, WikiPage.modified_on)
                  .join(
                      WikiPageIndex,
                      on=(WikiPage.id==WikiPageIndex.docid))
-                 .where(WikiPageIndex.match(search_keyword))
+                 .where(*filter)
                  .order_by(WikiPageIndex.rank(2.0, 1.0), WikiPage.modified_on.desc())
                  .paginate(kwargs['current_page_number'], paginate_by=100))
         # TODO: add title-only search
         # query = query.where(WikiPage.title.contains(search_keyword))
+
         kwargs['wiki_pages'] = query.execute()
         count = query.count()
         kwargs['total_page_number'] = math.ceil(count / 100)
@@ -397,7 +408,7 @@ def search():
             calc_page_num(kwargs['current_page_number'], kwargs['total_page_number'])
 
     if form.validate_on_submit():
-        return redirect(url_for('.search', search=form.search.data))
+        return redirect(url_for('.search', keyword=form.search.data, start=form.start_date.data, end=form.end_date.data))
 
     return render_template(
         'wiki/search.html',

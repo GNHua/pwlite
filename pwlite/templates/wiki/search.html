@@ -1,24 +1,34 @@
 {% extends 'wiki/layout.html' %}
 
+{% block css %}
+{{ super() }}
+<link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.6.4/css/bootstrap-datepicker.standalone.min.css" rel="stylesheet"/>
+{% endblock css %}
+
 {% block header %}
 Search
-{% endblock %}
+{% endblock header %}
 
 {% block other_content %}
-<div class="row">
-  <div class="col-lg-4">
-    <form method="Post">
-      {{ form.csrf_token }}
-      <div class="input-group mb-3">
-        {% set attribs = {'placeholder':'Search for...', 'aria-label':'Search for...', 'aria-describedby': 'button-addon'}  %}
-        {{ form.search(class_='form-control', **attribs) }}
-        <div class="input-group-append">
-          {{ form.submit(class_='btn btn-primary', value='Go!', id='button-addon') }}
-        </div>
-      </div>
-    </form>
+<form method="POST">
+  {{ form.csrf_token }}
+  <div class="form-group">
+    <label for="inputSearch">Keywords</label>
+    {{ form.search(class_='form-control', id='inputSearch', placeholder='Search for...') }}
   </div>
-</div>
+  <div class="form-row">
+    <div class="form-group col-md-6">
+      <label for="inputDateFrom">From</label>
+      {{ form.start_date(class_='form-control', id='inputDateFrom', placeholder='MM/DD/YYYY') }}
+    </div>
+    <div class="form-group col-md-6">
+      <label for="inputDateTo">To</label>
+      {{ form.end_date(class_='form-control', id='inputDateTo', placeholder='MM/DD/YYYY') }}
+    </div>
+  </div>
+  {{ form.submit(class_='btn btn-primary', value='Search') }}
+</form>
+<br>
 
 {% if wiki_pages %}
 <div id="search-result">
@@ -36,7 +46,7 @@ Search
       <tr>
         <th scope="row">{{ loop.index }}</th>
         <td><a href="{{ url_for('wiki.page', wiki_page_id=wiki_page.id) }}">{{ wiki_page.title }}</a></td>
-        <td>{{ convert_datetime(wiki_page.modified_on).strftime('%Y-%m-%d %H:%M:%S') }}</td>
+        <td>{{ convert_utc_to_mdt(wiki_page.modified_on).strftime('%Y-%m-%d %H:%M:%S') }}</td>
       </tr>
       {% endfor %}
     </tbody>
@@ -98,4 +108,37 @@ Search
 </nav>
 {% endif %}
 <br><br><br><br><br><br><br><br>
-{% endblock %}
+{% endblock other_content %}
+
+{% block js %}
+{{ super() }}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.6.4/js/bootstrap-datepicker.min.js"></script>
+<script type="text/javascript">
+  $('#inputDateFrom').datepicker({
+    format: 'mm/dd/yyyy',
+    todayHighlight: true
+  });
+  $('#inputDateTo').datepicker({
+    format: 'mm/dd/yyyy',
+    todayHighlight: true
+  });
+  $('#inputDateFrom').datepicker()
+    .on('changeDate', function(e) {
+      let dateFrom = $('#inputDateFrom').datepicker('getDate');
+      let dateTo = $('#inputDateTo').datepicker('getDate');
+      if (dateTo && +dateFrom > +dateTo) {
+        $('#inputDateTo').datepicker('setDate', dateFrom);
+      }
+      $('#inputDateTo').datepicker('setStartDate', dateFrom);
+    });
+  $('#inputDateTo').datepicker()
+    .on('changeDate', function(e) {
+      let dateFrom = $('#inputDateFrom').datepicker('getDate');
+      let dateTo = $('#inputDateTo').datepicker('getDate');
+      if (dateFrom && +dateFrom > +dateTo) {
+        $('#inputDateFrom').datepicker('setDate', dateTo);
+      }
+      $('#inputDateFrom').datepicker('setEndDate', dateTo);
+    });
+</script>
+{% endblock js %}

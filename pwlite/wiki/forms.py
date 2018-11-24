@@ -28,6 +28,8 @@ class RenameForm(FlaskForm):
 
 class SearchForm(FlaskForm):
     search = StringField('Search')
+    start_date = StringField()
+    end_date = StringField()
     submit = SubmitField('Search')
 
 
