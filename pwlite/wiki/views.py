@@ -8,7 +8,7 @@ import math
 
 from pwlite.extensions import db, markdown
 from pwlite.utils import flash_errors, xstr, get_object_or_404, \
-    calc_page_num, convert_utc_to_mdt
+    calc_page_num, get_pagination_kwargs, convert_utc_to_mdt
 from pwlite.models import WikiPage, WikiPageIndex, WikiKeypage, \
     WikiPageVersion, WikiReference, WikiFile
 from pwlite.wiki.forms import WikiEditForm, UploadForm, RenameForm, \
@@ -377,7 +377,9 @@ def search():
     keyword = request.args.get('keyword')
     start_date = request.args.get('start')
     end_date = request.args.get('end')
-    kwargs = dict(current_page_number=request.args.get('page', default=1, type=int))
+    current_page_number=request.args.get('page', default=1, type=int)
+    number_per_page = 100
+    kwargs = dict()
     form = SearchForm(search=keyword, start_date=start_date, end_date=end_date)
 
     if keyword and not keyword.isspace():
@@ -396,15 +398,11 @@ def search():
                      on=(WikiPage.id==WikiPageIndex.docid))
                  .where(*filter)
                  .order_by(WikiPageIndex.rank(2.0, 1.0), WikiPage.modified_on.desc())
-                 .paginate(kwargs['current_page_number'], paginate_by=100))
+                 .paginate(current_page_number, paginate_by=100))
         # TODO: add title-only search
         # query = query.where(WikiPage.title.contains(search_keyword))
 
-        kwargs['wiki_pages'] = query.execute()
-        count = query.count()
-        kwargs['total_page_number'] = math.ceil(count / 100)
-        kwargs['start_page_number'], kwargs['end_page_number'] = \
-            calc_page_num(kwargs['current_page_number'], kwargs['total_page_number'])
+        get_pagination_kwargs(kwargs, query, current_page_number, number_per_page)
 
     if form.validate_on_submit():
         return redirect(url_for(
@@ -486,17 +484,15 @@ def admin():
 
 @blueprint.route('/all-pages')
 def all_pages():
-    kwargs = dict(current_page_number=request.args.get('page', default=1, type=int))
+    current_page_number=request.args.get('page', default=1, type=int)
+    number_per_page = 100
     query = (WikiPage
              .select(WikiPage.id, WikiPage.title, WikiPage.modified_on)
              .order_by(WikiPage.id)
-             .paginate(kwargs['current_page_number'], paginate_by=100))
+             .paginate(current_page_number, paginate_by=number_per_page))
 
-    kwargs['wiki_pages'] = query.execute()
-    count = query.count()
-    kwargs['total_page_number'] = math.ceil(count / 100)
-    kwargs['start_page_number'], kwargs['end_page_number'] = \
-        calc_page_num(kwargs['current_page_number'], kwargs['total_page_number'])
+    kwargs = dict()
+    get_pagination_kwargs(kwargs, query, current_page_number, number_per_page)
 
     return render_template(
         'wiki/all_pages.html',
@@ -508,17 +504,15 @@ def all_pages():
 
 @blueprint.route('/all-files')
 def all_files():
-    kwargs = dict(current_page_number=request.args.get('page', default=1, type=int))
+    current_page_number=request.args.get('page', default=1, type=int)
+    number_per_page = 100
     query = (WikiFile
              .select()
              .order_by(WikiFile.id)
-             .paginate(kwargs['current_page_number'], paginate_by=100))
+             .paginate(current_page_number, paginate_by=number_per_page))
 
-    kwargs['wiki_files'] = query.execute()
-    count = query.count()
-    kwargs['total_page_number'] = math.ceil(count / 100)
-    kwargs['start_page_number'], kwargs['end_page_number'] = \
-        calc_page_num(kwargs['current_page_number'], kwargs['total_page_number'])
+    kwargs = dict()
+    get_pagination_kwargs(kwargs, query, current_page_number, number_per_page)
 
     return render_template(
         'wiki/all_files.html',

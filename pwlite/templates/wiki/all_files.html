@@ -16,7 +16,7 @@ All Pages
     </tr>
   </thead>
   <tbody>
-    {% for wiki_file in wiki_files %}
+    {% for wiki_file in data %}
     <tr>
       <th scope="row">{{ wiki_file.id }}</th>
       <td><a href="{{ url_for('wiki.file', wiki_file_id=wiki_file.id) }}">{{ wiki_file.name }}</a></td>

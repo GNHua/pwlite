@@ -14,7 +14,7 @@ All Pages
     </tr>
   </thead>
   <tbody>
-    {% for wiki_page in wiki_pages %}
+    {% for wiki_page in data %}
     <tr>
       <th scope="row">{{ wiki_page.id }}</th>
       <td><a href="{{ url_for('wiki.page', wiki_page_id=wiki_page.id) }}">{{ wiki_page.title }}</a></td>

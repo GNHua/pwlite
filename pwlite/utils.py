@@ -3,6 +3,7 @@
 from flask import flash, abort
 from peewee import DoesNotExist, SelectQuery
 from datetime import timezone
+import math
 
 from pwlite.settings import TIMEZONE
 
@@ -38,6 +39,15 @@ def calc_page_num(current_page_number, total_page_number):
         start_page_number, end_page_number = current_page_number - 3, current_page_number + 3
 
     return start_page_number, end_page_number
+
+
+def get_pagination_kwargs(d, query, current_page_number, number_per_page):
+    d['data'] = query.execute()
+    count = query.count()
+    d['current_page_number'] = current_page_number
+    d['total_page_number'] = math.ceil(count / number_per_page)
+    d['start_page_number'], d['end_page_number'] = \
+        calc_page_num(d['current_page_number'], d['total_page_number'])
 
 
 def convert_utc_to_mdt(datetime, reverse=False):

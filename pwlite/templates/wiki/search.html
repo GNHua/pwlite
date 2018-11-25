@@ -30,7 +30,7 @@ Search
 </form>
 <br>
 
-{% if wiki_pages %}
+{% if data %}
 <div id="search-result">
   <h4>Search Results for <i>"{{ form.search.data }}"</i></h4>
   <table class="table table-sm">
@@ -42,7 +42,7 @@ Search
       </tr>
     </thead>
     <tbody>
-      {% for wiki_page in wiki_pages %}
+      {% for wiki_page in data %}
       <tr>
         <th scope="row">{{ loop.index }}</th>
         <td><a href="{{ url_for('wiki.page', wiki_page_id=wiki_page.id) }}">{{ wiki_page.title }}</a></td>

@@ -29,13 +29,9 @@ def close_database_connection(response):
 @blueprint.route('/')
 def home():
     """Cover page."""
-    query = (WikiGroup
-             .select()
-             .where(WikiGroup.active==True))
-    active_wiki_groups = query.execute()
     return render_template(
         'admin/cover.html',
-        active_wiki_groups=active_wiki_groups
+        active_wiki_groups=current_app.active_wiki_groups
     )
 
 
@@ -122,6 +118,8 @@ def delete_group(wiki_group):
     os.remove(os.path.join(DB_PATH, '{0}.db'.format(wiki_group)))
     # remove uploaded files
     shutil.rmtree(os.path.join(DB_PATH, wiki_group))
+    # remove db name from cached db names
+    current_app.active_wiki_groups.remove(wiki_group)
     return redirect(url_for('.super_admin'))
 
 
