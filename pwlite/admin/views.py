@@ -29,9 +29,13 @@ def close_database_connection(response):
 @blueprint.route('/')
 def home():
     """Cover page."""
+    query = (WikiGroup
+             .select()
+             .where(WikiGroup.active==True))
+    active_wiki_groups = query.execute()
     return render_template(
         'admin/cover.html',
-        active_wiki_groups=current_app.active_wiki_groups
+        active_wiki_groups=active_wiki_groups
     )
 
 
