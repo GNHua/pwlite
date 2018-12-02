@@ -476,10 +476,16 @@ def changes():
         wiki_more_changes=wiki_more_changes
     )
 
-# TODO: implement group admin
+
 @blueprint.route('/admin')
-def admin():
-    return ''
+def group_admin():
+    wiki_page_num = WikiPage.select().count()
+    wiki_file_num = WikiFile.select().count()
+    return render_template(
+        'wiki/group_admin.html',
+        wiki_page_num=wiki_page_num,
+        wiki_file_num=wiki_file_num
+    )
 
 
 @blueprint.route('/all-pages')
