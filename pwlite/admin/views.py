@@ -42,7 +42,7 @@ def home():
 @blueprint.route('/super_admin', methods=['GET', 'POST'])
 def super_admin():
     """Manage wiki groups."""
-    all_wiki_groups = WikiGroup.select().execute()
+    all_wiki_groups = list(WikiGroup.select().execute())
     form = AddWikiGroupForm()
 
     # Create a new wiki group with its own database and static file directory
@@ -89,10 +89,20 @@ def super_admin():
     else:
         flash_errors(form)
 
+    wiki_page_nums = list()
+    wiki_file_nums = list()
+    for wiki_group in all_wiki_groups:
+        db.close()
+        db.pick('{0}.db'.format(wiki_group.db_name))
+        wiki_page_nums.append(WikiPage.select().count())
+        wiki_file_nums.append(WikiFile.select().count())
+
     return render_template(
         'admin/super_admin.html',
         form=form,
-        all_wiki_groups=all_wiki_groups
+        all_wiki_groups=all_wiki_groups,
+        wiki_page_nums=wiki_page_nums,
+        wiki_file_nums=wiki_file_nums
     )
 
 
