@@ -399,10 +399,10 @@ def search():
                  .where(*filter)
                  .order_by(WikiPageIndex.rank(2.0, 1.0), WikiPage.modified_on.desc())
                  .paginate(current_page_number, paginate_by=100))
+        total_page_number = math.ceil(WikiPage.select().count() / number_per_page)
         # TODO: add title-only search
         # query = query.where(WikiPage.title.contains(search_keyword))
-
-        get_pagination_kwargs(kwargs, query, current_page_number, number_per_page)
+        kwargs = get_pagination_kwargs(query, current_page_number, total_page_number)
 
     if form.validate_on_submit():
         return redirect(url_for(
@@ -496,9 +496,8 @@ def all_pages():
              .select(WikiPage.id, WikiPage.title, WikiPage.modified_on)
              .order_by(WikiPage.id)
              .paginate(current_page_number, paginate_by=number_per_page))
-
-    kwargs = dict()
-    get_pagination_kwargs(kwargs, query, current_page_number, number_per_page)
+    total_page_number = math.ceil(WikiPage.select().count() / number_per_page)
+    kwargs = get_pagination_kwargs(query, current_page_number, total_page_number)
 
     return render_template(
         'wiki/all_pages.html',
@@ -516,9 +515,8 @@ def all_files():
              .select()
              .order_by(WikiFile.id)
              .paginate(current_page_number, paginate_by=number_per_page))
-
-    kwargs = dict()
-    get_pagination_kwargs(kwargs, query, current_page_number, number_per_page)
+    total_page_number = math.ceil(WikiFile.select().count() / number_per_page)
+    kwargs = get_pagination_kwargs(query, current_page_number, total_page_number)
 
     return render_template(
         'wiki/all_files.html',

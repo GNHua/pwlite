@@ -41,13 +41,14 @@ def calc_page_num(current_page_number, total_page_number):
     return start_page_number, end_page_number
 
 
-def get_pagination_kwargs(d, query, current_page_number, number_per_page):
+def get_pagination_kwargs(query, current_page_number, total_page_number):
+    d = dict()
     d['data'] = query.execute()
-    count = query.count()
     d['current_page_number'] = current_page_number
-    d['total_page_number'] = math.ceil(count / number_per_page)
+    d['total_page_number'] = total_page_number
     d['start_page_number'], d['end_page_number'] = \
         calc_page_num(d['current_page_number'], d['total_page_number'])
+    return d
 
 
 def convert_utc_to_mdt(datetime, reverse=False):
