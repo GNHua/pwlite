@@ -47,14 +47,16 @@
 <script type="text/javascript">
   {% if wiki_page and wiki_page.toc %}
   let d = document.getElementById('toc');
-  let uls = d.getElementsByTagName('ul');
-  if (uls.length > 0) {
-    uls[0].className = "nav flex-column";
+  if (d) {
+    let uls = d.getElementsByTagName('ul');
+    if (uls.length > 0) {
+      uls[0].className = "nav flex-column";
 
-    let lis = d.getElementsByTagName('li');
-    let links = d.getElementsByTagName('a');
-    for (i = 0; i < lis.length; i++) {
-      lis[i].className = 'nav-item col-md-12 px-0';
+      let lis = d.getElementsByTagName('li');
+      let links = d.getElementsByTagName('a');
+      for (i = 0; i < lis.length; i++) {
+        lis[i].className = 'nav-item col-md-12 px-0';
+      }
     }
   }
   {% endif %}

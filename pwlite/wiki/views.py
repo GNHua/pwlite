@@ -5,6 +5,7 @@ from flask import Blueprint, g, render_template, redirect, url_for, \
 from datetime import datetime, timedelta
 import os
 import math
+import difflib
 
 from pwlite.extensions import db, markdown
 from pwlite.utils import flash_errors, xstr, get_object_or_404, \
@@ -12,8 +13,8 @@ from pwlite.utils import flash_errors, xstr, get_object_or_404, \
 from pwlite.models import WikiPage, WikiPageIndex, WikiKeypage, \
     WikiPageVersion, WikiReference, WikiFile
 from pwlite.wiki.forms import WikiEditForm, UploadForm, RenameForm, \
-    SearchForm, KeyPageEditForm
-from pwlite.diff import make_patch
+    SearchForm, KeyPageEditForm, HistoryRecoverForm
+from pwlite.diff import make_patch, apply_patches
 from pwlite.settings import DB_PATH
 from pwlite.markdown import render_wiki_page, render_wiki_file
 
@@ -144,33 +145,7 @@ def edit(wiki_page_id):
             if diff:
                 with db.atomic():
                     toc, html = markdown(form.textArea.data)
-                    WikiPageVersion.create(
-                        wiki_page=wiki_page,
-                        diff=diff,
-                        version=wiki_page.current_version,
-                        modified_on=wiki_page.modified_on
-                    )
-
-                    (WikiPageIndex
-                     .update(markdown=form.textArea.data)
-                     .where(WikiPageIndex.docid==wiki_page.id)
-                     .execute())
-
-                    (WikiPage
-                     .update(
-                         markdown=form.textArea.data,
-                         html=html,
-                         toc=toc,
-                         current_version=WikiPage.current_version,
-                         modified_on=datetime.utcnow())
-                     .where(WikiPage.id==wiki_page.id)
-                     .execute())
-
-                    # remove unused WikiReference
-                    (WikiReference
-                     .delete()
-                     .where(WikiReference.referenced.in_(g.wiki_refs))
-                     .execute())
+                    wiki_page.update_content(diff, form.textArea.data, html, toc)
 
             return redirect(url_for('.page', wiki_page_id=wiki_page.id))
         else:
@@ -402,7 +377,8 @@ def search():
         total_page_number = math.ceil(WikiPage.select().count() / number_per_page)
         # TODO: add title-only search
         # query = query.where(WikiPage.title.contains(search_keyword))
-        kwargs = get_pagination_kwargs(query, current_page_number, total_page_number)
+        kwargs['data'] = query.execute()
+        get_pagination_kwargs(kwargs, current_page_number, total_page_number)
 
     if form.validate_on_submit():
         return redirect(url_for(
@@ -419,10 +395,54 @@ def search():
     )
 
 
-# TODO: implement history diff check
-@blueprint.route('/history/<int:wiki_page_id>')
+@blueprint.route('/history/<int:wiki_page_id>', methods=['GET', 'POST'])
 def history(wiki_page_id):
-    return ''
+    wiki_page = get_object_or_404(
+        WikiPage.select(),
+        WikiPage.id==wiki_page_id
+    )
+
+    if wiki_page.current_version == 1:
+        return redirect(url_for('.page', wiki_page_id=wiki_page_id))
+
+    form = HistoryRecoverForm()
+    # if form.validate_on_submit():
+    #     if form.version.data >= wiki_page.current_version:
+    #         flash('Please enter an old version number.')
+    #     else:
+    #         recovered_content = page.get_version_content(group, form.version.data)
+    #         toc, html = wiki_md(group, recovered_content)
+    #         page.update_content(group, recovered_content, html, toc)
+    #         _WikiPage.objects(id=page.id).update(add_to_set__refs=wiki_md.wiki_refs,
+    #                                              add_to_set__files=wiki_md.wiki_files)
+    #         return redirect(url_for('.wiki_page', group=group, page_id=page_id))
+
+    old_ver_num = request.args.get('version', default=wiki_page.current_version-1, type=int)
+    new_ver_num = old_ver_num + 1
+    query = (WikiPageVersion
+             .select()
+             .where(
+                 WikiPageVersion.wiki_page==wiki_page,
+                 WikiPageVersion.version>=old_ver_num)
+             .order_by(WikiPageVersion.id.desc()))
+    wiki_page_versions = query.execute()
+    old_to_current_patches = [pv.diff for pv in wiki_page_versions]
+    new_markdown = apply_patches(wiki_page.markdown, old_to_current_patches[:-1], revert=True)
+    old_markdown = apply_patches(new_markdown, [old_to_current_patches[-1]], revert=True)
+    diff = difflib.HtmlDiff()
+    diff_table = diff.make_table(old_markdown.splitlines(), new_markdown.splitlines())
+    diff_table = diff_table.replace('&nbsp;', ' ').replace(' nowrap="nowrap"', '')
+    kwargs = dict()
+    get_pagination_kwargs(kwargs, old_ver_num, wiki_page.current_version-1)
+    return render_template(
+        'wiki/history.html',
+        wiki_page=wiki_page,
+        wiki_page_versions=wiki_page_versions,
+        old_ver_num=old_ver_num,
+        new_ver_num=new_ver_num,
+        diff_table=diff_table,
+        **kwargs
+    )
 
 
 @blueprint.route('/keypage-edit', methods=['GET', 'POST'])
@@ -497,7 +517,8 @@ def all_pages():
              .order_by(WikiPage.id)
              .paginate(current_page_number, paginate_by=number_per_page))
     total_page_number = math.ceil(WikiPage.select().count() / number_per_page)
-    kwargs = get_pagination_kwargs(query, current_page_number, total_page_number)
+    kwargs['data'] = query.execute()
+    get_pagination_kwargs(kwargs, current_page_number, total_page_number)
 
     return render_template(
         'wiki/all_pages.html',
@@ -516,7 +537,8 @@ def all_files():
              .order_by(WikiFile.id)
              .paginate(current_page_number, paginate_by=number_per_page))
     total_page_number = math.ceil(WikiFile.select().count() / number_per_page)
-    kwargs = get_pagination_kwargs(query, current_page_number, total_page_number)
+    kwargs['data'] = query.execute()
+    get_pagination_kwargs(kwargs, current_page_number, total_page_number)
 
     return render_template(
         'wiki/all_files.html',

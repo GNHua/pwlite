@@ -45,6 +45,35 @@ class WikiPage(BaseModel):
     current_version = IntegerField(default=1)
     modified_on = DateTimeField(index=True, default=datetime.utcnow)
 
+    def update_content(self, diff, markdown, html, toc):
+        WikiPageVersion.create(
+            wiki_page=self,
+            diff=diff,
+            version=self.current_version,
+            modified_on=self.modified_on
+        )
+
+        (WikiPageIndex
+        .update(markdown=markdown)
+        .where(WikiPageIndex.docid==self.id)
+        .execute())
+
+        (WikiPage
+        .update(
+            markdown=markdown,
+            html=html,
+            toc=toc,
+            current_version=WikiPage.current_version+1,
+            modified_on=datetime.utcnow())
+        .where(WikiPage.id==self.id)
+        .execute())
+
+        # remove unused WikiReference
+        (WikiReference
+        .delete()
+        .where(WikiReference.referenced.in_(g.wiki_refs))
+        .execute())
+
 
 class WikiPageIndex(BaseFTSModel):
     title = SearchField()

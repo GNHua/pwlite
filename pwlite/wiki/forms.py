@@ -36,3 +36,11 @@ class SearchForm(FlaskForm):
 class KeyPageEditForm(FlaskForm):
     textArea = TextAreaField('Edit')
     submit = SubmitField('Save Changes')
+
+
+class HistoryRecoverForm(FlaskForm):
+    version = IntegerField(
+        'Recover history',
+        validators=[DataRequired('Please enter a version number.')]
+    )
+    submit = SubmitField('Submit')

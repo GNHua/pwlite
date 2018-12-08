@@ -1,0 +1,62 @@
+{% extends 'wiki/layout.html' %}
+
+{% block css %}
+{{ super() }}
+{{ stylesheet_tag('css/diff.css') }}
+{% endblock css %}
+
+{% block header %}
+History - {{ wiki_page.title }}
+{% endblock header %}
+
+{% block other_content %}
+{% macro my_url_for(page_number) -%}
+{{ url_for('wiki.history', wiki_page_id=wiki_page.id, version=page_number) }}
+{%- endmacro %}
+
+{% include 'wiki/pagination.html' %}
+
+<table class="diff" id="diff-all">
+  <tr>
+    <td align="center">
+      Version {{ old_ver_num }} / {{ wiki_page.current_version }}<br>
+      {{ convert_utc_to_mdt(wiki_page_versions[-1].modified_on).strftime('%Y-%m-%d %H:%M:%S') }}
+    </td>
+    <td align="center">
+      Version {{ new_ver_num }} / {{ wiki_page.current_version }}<br>
+      {% if new_ver_num < wiki_page.current_version %}
+      {{ convert_utc_to_mdt(wiki_page_versions[-2].modified_on).strftime('%Y-%m-%d %H:%M:%S') }}
+      {% else %}
+      {{ convert_utc_to_mdt(wiki_page.modified_on).strftime('%Y-%m-%d %H:%M:%S') }}
+      {% endif %}
+    </td>
+  </tr>
+  <tr>
+    <td colspan="2" align="center">
+    {{ diff_table | safe }}
+    </td>
+  </tr>
+</table>
+<br>
+<table class="diff" summary="Legends">
+  <tr> <th colspan="2"> Legends </th> </tr>
+  <tr>
+    <td>
+      <table class="diff" border="" summary="Colors">
+        <tr><th> Colors </th> </tr>
+        <tr><td class="diff_add">&nbsp;Added&nbsp;</td></tr>
+        <tr><td class="diff_chg">Changed</td> </tr>
+        <tr><td class="diff_sub">Deleted</td> </tr>
+      </table>
+    </td>
+    <td>
+      <table class="diff" border="" summary="Links">
+        <tr><th colspan="2"> Links </th> </tr>
+        <tr><td>(f)irst change</td> </tr>
+        <tr><td>(n)ext change</td> </tr>
+        <tr><td>(t)op</td> </tr>
+      </table>
+    </td>
+  </tr>
+</table>
+{% endblock other_content %}
