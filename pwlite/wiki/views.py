@@ -497,15 +497,19 @@ def keypage_edit():
 # TODO: enhancement - choose number of changes, sort by arbitrary column
 @blueprint.route('/changes')
 def changes():
+    current_page_number=request.args.get('page', default=1, type=int)
+    number_per_page = 100
     query = (WikiPage
              .select(WikiPage.id, WikiPage.title, WikiPage.modified_on)
              .order_by(WikiPage.modified_on.desc())
-             .limit(50))
-    wiki_more_changes = query.execute()
+             .paginate(current_page_number, paginate_by=number_per_page))
+    total_page_number = math.ceil(WikiPage.select().count() / number_per_page)
+    kwargs = dict(data=query.execute(), number_per_page=number_per_page)
+    get_pagination_kwargs(kwargs, current_page_number, total_page_number)
 
     return render_template(
         'wiki/changes.html',
-        wiki_more_changes=wiki_more_changes
+        **kwargs
     )
 
 

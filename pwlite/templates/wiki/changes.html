@@ -5,6 +5,12 @@ Changes
 {% endblock header %}
 
 {% block other_content %}
+{% macro my_url_for(page_number) -%}
+{{ url_for('wiki.changes', page=page_number) }}
+{%- endmacro %}
+
+{% include 'wiki/pagination.html' %}
+
 <table class="table table-sm">
   <thead>
     <tr>
@@ -14,14 +20,16 @@ Changes
     </tr>
   </thead>
   <tbody>
-    {% for wiki_change in wiki_more_changes %}
+    {% for wiki_page in data %}
     <tr>
-      <th scope="row">{{ loop.index }}</th>
-      <td><a href="{{ url_for('wiki.page', wiki_page_id=wiki_change.id) }}">{{ wiki_change.title }}</a></td>
-      <td>{{ convert_utc_to_local(wiki_change.modified_on).strftime('%Y-%m-%d %H:%M:%S') }}</td>
+      <th scope="row">{{ loop.index + number_per_page*(current_page_number-1) }}</th>
+      <td><a href="{{ url_for('wiki.page', wiki_page_id=wiki_page.id) }}">{{ wiki_page.title }}</a></td>
+      <td>{{ convert_utc_to_local(wiki_page.modified_on).strftime('%Y-%m-%d %H:%M:%S') }}</td>
     </tr>
     {% endfor %}
   </tbody>
 </table>
+
+{% include 'wiki/pagination.html' %}
 <br><br><br><br><br><br><br><br>
 {% endblock other_content %}
