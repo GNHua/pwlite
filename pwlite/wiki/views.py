@@ -420,6 +420,12 @@ def history(wiki_page_id):
 
     old_ver_num = request.args.get('version', default=wiki_page.current_version-1, type=int)
     new_ver_num = old_ver_num + 1
+    if new_ver_num > wiki_page.current_version:
+        return redirect(url_for(
+            '.history',
+            wiki_page_id=wiki_page_id,
+            version=wiki_page.current_version-1
+        ))
 
     query = (WikiPageVersion
              .select()
