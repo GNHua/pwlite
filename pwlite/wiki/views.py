@@ -9,7 +9,7 @@ import difflib
 
 from pwlite.extensions import db, markdown
 from pwlite.utils import flash_errors, xstr, get_object_or_404, \
-    calc_page_num, get_pagination_kwargs, convert_utc_to_mdt
+    calc_page_num, get_pagination_kwargs, convert_utc_to_local
 from pwlite.models import WikiPage, WikiPageIndex, WikiKeypage, \
     WikiPageVersion, WikiReference, WikiFile
 from pwlite.wiki.forms import WikiEditForm, UploadForm, RenameForm, \
@@ -77,8 +77,8 @@ def inject_wiki_group_data():
              .limit(5))
     wiki_changes = query.execute()
 
-    latest_change_time = convert_utc_to_mdt(wiki_changes[0].modified_on)
-    now = convert_utc_to_mdt(datetime.utcnow())
+    latest_change_time = convert_utc_to_local(wiki_changes[0].modified_on)
+    now = convert_utc_to_local(datetime.utcnow())
 
     if latest_change_time.date() == now.date():
         latest_change_time = latest_change_time.strftime('[%H:%M]')
@@ -91,7 +91,7 @@ def inject_wiki_group_data():
         wiki_keypages=wiki_keypages,
         wiki_changes=wiki_changes,
         latest_change_time=latest_change_time,
-        convert_utc_to_mdt=convert_utc_to_mdt
+        convert_utc_to_local=convert_utc_to_local
     )
 
 
@@ -523,7 +523,7 @@ def all_pages():
              .order_by(WikiPage.id)
              .paginate(current_page_number, paginate_by=number_per_page))
     total_page_number = math.ceil(WikiPage.select().count() / number_per_page)
-    kwargs['data'] = query.execute()
+    kwargs = dict(data=query.execute())
     get_pagination_kwargs(kwargs, current_page_number, total_page_number)
 
     return render_template(
@@ -543,7 +543,7 @@ def all_files():
              .order_by(WikiFile.id)
              .paginate(current_page_number, paginate_by=number_per_page))
     total_page_number = math.ceil(WikiFile.select().count() / number_per_page)
-    kwargs['data'] = query.execute()
+    kwargs = dict(data=query.execute())
     get_pagination_kwargs(kwargs, current_page_number, total_page_number)
 
     return render_template(

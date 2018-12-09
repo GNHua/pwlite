@@ -48,5 +48,5 @@ def get_pagination_kwargs(d, current_page_number, total_page_number):
         calc_page_num(d['current_page_number'], d['total_page_number'])
 
 
-def convert_utc_to_mdt(datetime):
+def convert_utc_to_local(datetime):
     return datetime.replace(tzinfo=timezone.utc).astimezone(TIMEZONE)

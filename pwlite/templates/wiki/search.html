@@ -46,7 +46,7 @@ Search
       <tr>
         <th scope="row">{{ loop.index }}</th>
         <td><a href="{{ url_for('wiki.page', wiki_page_id=wiki_page.id) }}">{{ wiki_page.title }}</a></td>
-        <td>{{ convert_utc_to_mdt(wiki_page.modified_on).strftime('%Y-%m-%d %H:%M:%S') }}</td>
+        <td>{{ convert_utc_to_local(wiki_page.modified_on).strftime('%Y-%m-%d %H:%M:%S') }}</td>
       </tr>
       {% endfor %}
     </tbody>

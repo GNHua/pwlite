@@ -31,14 +31,14 @@ History - {{ wiki_page.title }}
   <tr>
     <td align="center">
       Version {{ old_ver_num }} / {{ wiki_page.current_version }}<br>
-      {{ convert_utc_to_mdt(wiki_page_versions[-1].modified_on).strftime('%Y-%m-%d %H:%M:%S') }}
+      {{ convert_utc_to_local(wiki_page_versions[-1].modified_on).strftime('%Y-%m-%d %H:%M:%S') }}
     </td>
     <td align="center">
       Version {{ new_ver_num }} / {{ wiki_page.current_version }}<br>
       {% if new_ver_num < wiki_page.current_version %}
-      {{ convert_utc_to_mdt(wiki_page_versions[-2].modified_on).strftime('%Y-%m-%d %H:%M:%S') }}
+      {{ convert_utc_to_local(wiki_page_versions[-2].modified_on).strftime('%Y-%m-%d %H:%M:%S') }}
       {% else %}
-      {{ convert_utc_to_mdt(wiki_page.modified_on).strftime('%Y-%m-%d %H:%M:%S') }}
+      {{ convert_utc_to_local(wiki_page.modified_on).strftime('%Y-%m-%d %H:%M:%S') }}
       {% endif %}
     </td>
   </tr>
