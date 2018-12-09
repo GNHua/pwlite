@@ -10,6 +10,17 @@ History - {{ wiki_page.title }}
 {% endblock header %}
 
 {% block other_content %}
+<form class="form-inline" method="POST">
+  {{ form.csrf_token }}
+  Rewind to
+  <div class="form-group mx-sm-3 mb-2">
+    {{ form.version(class_='form-control') }}
+  </div>
+  {{ form.submit(class_='btn btn-primary mb-2') }} 
+  <a href="{{ url_for('wiki.page', wiki_page_id=wiki_page.id) }}" class="btn btn-secondary mx-sm-2 mb-2" role="button">Cancel</a>
+</form>
+<hr>
+
 {% macro my_url_for(page_number) -%}
 {{ url_for('wiki.history', wiki_page_id=wiki_page.id, version=page_number) }}
 {%- endmacro %}

@@ -54,25 +54,47 @@ class WikiPage(BaseModel):
         )
 
         (WikiPageIndex
-        .update(markdown=markdown)
-        .where(WikiPageIndex.docid==self.id)
-        .execute())
+         .update(markdown=markdown)
+         .where(WikiPageIndex.docid==self.id)
+         .execute())
 
         (WikiPage
-        .update(
-            markdown=markdown,
-            html=html,
-            toc=toc,
-            current_version=WikiPage.current_version+1,
-            modified_on=datetime.utcnow())
-        .where(WikiPage.id==self.id)
-        .execute())
+         .update(
+             markdown=markdown,
+             html=html,
+             toc=toc,
+             current_version=WikiPage.current_version+1,
+             modified_on=datetime.utcnow())
+         .where(WikiPage.id==self.id)
+         .execute())
 
         # remove unused WikiReference
         (WikiReference
-        .delete()
-        .where(WikiReference.referenced.in_(g.wiki_refs))
-        .execute())
+         .delete()
+         .where(WikiReference.referenced.in_(g.wiki_refs))
+         .execute())
+
+    def update_content_after_upload(self, diff, file_markdown, file_html):
+        WikiPageVersion.create(
+            wiki_page=self,
+            diff=diff,
+            version=self.current_version,
+            modified_on=self.modified_on
+        )
+
+        (WikiPageIndex
+         .update(markdown=self.markdown+file_markdown)
+         .where(WikiPageIndex.docid==self.id)
+         .execute())
+
+        (WikiPage
+         .update(
+             markdown=WikiPage.markdown+file_markdown,
+             html=WikiPage.html+file_html,
+             current_version=WikiPage.current_version+1,
+             modified_on=datetime.utcnow())
+         .where(WikiPage.id==self.id)
+         .execute())
 
 
 class WikiPageIndex(BaseFTSModel):

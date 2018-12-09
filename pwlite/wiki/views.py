@@ -212,28 +212,10 @@ def handle_upload():
             )
 
             diff = make_patch(xstr(wiki_page.markdown), xstr(wiki_page.markdown)+file_markdown)
-            WikiPageVersion.create(
-                wiki_page=wiki_page,
-                diff=diff,
-                version=wiki_page.current_version,
-                modified_on=wiki_page.modified_on
-            )
-
-            (WikiPageIndex
-             .update(markdown=wiki_page.markdown+file_markdown)
-             .where(WikiPageIndex.docid==wiki_page.id)
-             .execute())
-
-            (WikiPage
-             .update(
-                 markdown=WikiPage.markdown+file_markdown,
-                 html=WikiPage.html+file_html,
-                 current_version=WikiPage.current_version+1,
-                 modified_on=datetime.utcnow())
-             .where(WikiPage.id==wiki_page.id)
-             .execute())
+            wiki_page.update_content_after_upload(diff, file_markdown, file_html)
 
             return ''
+
     return file_markdown
 
 
@@ -245,11 +227,12 @@ def reference(wiki_page_id):
             WikiPage.title),
         WikiPage.id==wiki_page_id
     )
-    wiki_referencing_pages = (WikiPage
-                              .select(WikiPage.id, WikiPage.title)
-                              .join(WikiReference, on=WikiReference.referencing)
-                              .where(WikiReference.referenced == wiki_page)
-                              .execute())
+    query = (WikiPage
+             .select(WikiPage.id, WikiPage.title)
+             .join(WikiReference, on=WikiReference.referencing)
+             .where(WikiReference.referenced == wiki_page))
+    wiki_referencing_pages = query.execute()
+
     return render_template(
         'wiki/reference.html',
         wiki_page=wiki_page,
@@ -406,19 +389,37 @@ def history(wiki_page_id):
         return redirect(url_for('.page', wiki_page_id=wiki_page_id))
 
     form = HistoryRecoverForm()
-    # if form.validate_on_submit():
-    #     if form.version.data >= wiki_page.current_version:
-    #         flash('Please enter an old version number.')
-    #     else:
-    #         recovered_content = page.get_version_content(group, form.version.data)
-    #         toc, html = wiki_md(group, recovered_content)
-    #         page.update_content(group, recovered_content, html, toc)
-    #         _WikiPage.objects(id=page.id).update(add_to_set__refs=wiki_md.wiki_refs,
-    #                                              add_to_set__files=wiki_md.wiki_files)
-    #         return redirect(url_for('.wiki_page', group=group, page_id=page_id))
+    if form.validate_on_submit():
+        if form.version.data >= wiki_page.current_version:
+            flash('Please enter an old version number.')
+        else:
+            query = (WikiPageVersion
+                     .select()
+                     .where(
+                         WikiPageVersion.wiki_page==wiki_page,
+                         WikiPageVersion.version>=form.version.data)
+                     .order_by(WikiPageVersion.id.desc()))
+            wiki_page_versions = query.execute()
+            old_to_current_patches = [pv.diff for pv in wiki_page_versions]
+            recovered_content = apply_patches(wiki_page.markdown, old_to_current_patches, revert=True)
+
+            g.wiki_page = wiki_page
+            g.wiki_refs = list(WikiPage
+                               .select(WikiPage.id)
+                               .join(WikiReference, on=WikiReference.referenced)
+                               .where(WikiReference.referencing == wiki_page)
+                               .execute())
+
+            diff = make_patch(wiki_page.markdown, recovered_content)
+            if diff:
+                with db.atomic():
+                    toc, html = markdown(recovered_content)
+                    wiki_page.update_content(diff, recovered_content, html, toc)
+            return redirect(url_for('.page', wiki_page_id=wiki_page.id))
 
     old_ver_num = request.args.get('version', default=wiki_page.current_version-1, type=int)
     new_ver_num = old_ver_num + 1
+
     query = (WikiPageVersion
              .select()
              .where(
@@ -429,14 +430,18 @@ def history(wiki_page_id):
     old_to_current_patches = [pv.diff for pv in wiki_page_versions]
     new_markdown = apply_patches(wiki_page.markdown, old_to_current_patches[:-1], revert=True)
     old_markdown = apply_patches(new_markdown, [old_to_current_patches[-1]], revert=True)
+
     diff = difflib.HtmlDiff()
     diff_table = diff.make_table(old_markdown.splitlines(), new_markdown.splitlines())
     diff_table = diff_table.replace('&nbsp;', ' ').replace(' nowrap="nowrap"', '')
+
     kwargs = dict()
     get_pagination_kwargs(kwargs, old_ver_num, wiki_page.current_version-1)
+
     return render_template(
         'wiki/history.html',
         wiki_page=wiki_page,
+        form=form,
         wiki_page_versions=wiki_page_versions,
         old_ver_num=old_ver_num,
         new_ver_num=new_ver_num,
