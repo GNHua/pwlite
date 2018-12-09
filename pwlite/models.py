@@ -2,9 +2,9 @@
 """User models."""
 from flask import abort, g
 from peewee import Model, CharField, BooleanField, IntegerField, \
-    DateTimeField, TextField, ForeignKeyField
+    DateTimeField, TextField, ForeignKeyField, TimestampField
 from playhouse.sqlite_ext import FTSModel, SearchField
-from datetime import datetime
+import time
 
 from pwlite.extensions import db
 
@@ -43,7 +43,7 @@ class WikiPage(BaseModel):
     html = TextField(null=True, default='')
     toc = TextField(null=True, default='')
     current_version = IntegerField(default=1)
-    modified_on = DateTimeField(index=True, default=datetime.utcnow)
+    modified_on = TimestampField(resolution=1000, utc=True)
 
     def update_content(self, diff, markdown, html, toc):
         WikiPageVersion.create(
@@ -64,7 +64,7 @@ class WikiPage(BaseModel):
              html=html,
              toc=toc,
              current_version=WikiPage.current_version+1,
-             modified_on=datetime.utcnow())
+             modified_on=time.time())
          .where(WikiPage.id==self.id)
          .execute())
 
@@ -92,7 +92,7 @@ class WikiPage(BaseModel):
              markdown=WikiPage.markdown+file_markdown,
              html=WikiPage.html+file_html,
              current_version=WikiPage.current_version+1,
-             modified_on=datetime.utcnow())
+             modified_on=time.time())
          .where(WikiPage.id==self.id)
          .execute())
 
@@ -114,7 +114,7 @@ class WikiPageVersion(BaseModel):
     wiki_page = ForeignKeyField(WikiPage, backref='versions')
     diff = TextField()
     version = IntegerField()
-    modified_on = DateTimeField()
+    modified_on = TimestampField(resolution=1000, utc=True)
 
 
 class WikiReference(BaseModel):
@@ -128,28 +128,10 @@ class WikiReference(BaseModel):
 
 
 class WikiFile(BaseModel):
-    """Model of uploaded files.
-
-    .. py:attribute:: name
-
-        file name
-
-    .. py:attribute:: mime_type
-
-        file type. Example: image/png.
-
-    .. py:attribute:: size
-
-        file size in bytes
-
-    .. py:attribute:: upload_on
-
-        the time when file is uploaded
-    """
     name = CharField(max_length=256)
     mime_type = CharField(null=True)
     size = IntegerField(null=True) # in bytes
-    uploaded_on = DateTimeField(default=datetime.utcnow)
+    uploaded_on = TimestampField(resolution=1000, utc=True)
 
 
 class WikiKeypage(BaseModel):

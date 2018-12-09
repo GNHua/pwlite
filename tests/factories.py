@@ -34,5 +34,5 @@ class WikiGroupFactory(BaseFactory):
 #     markdown = TextField(null=True)
 #     html = TextField(null=True)
 #     current_version = IntegerField(default=1)
-#     modified_on = DateTimeField(default=datetime.utcnow)
+#     modified_on = TimestampField(resolution=1000)
 

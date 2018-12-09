@@ -5,6 +5,7 @@ import pytest
 from datetime import datetime
 from peewee import IntegrityError, fn
 from datetime import timezone, timedelta
+import time
 
 from .factories import WikiGroupFactory
 from pwlite.models import WikiGroup
@@ -324,7 +325,7 @@ class TestWikiPageVersion:
                     wiki_page=wiki_page,
                     diff=str(i+1),
                     version=i+1,
-                    modified_on=datetime.utcnow()
+                    modified_on=time.time()
                 )
 
         wiki_page = WikiPage.select().where(WikiPage.id==1)[0]
@@ -340,7 +341,7 @@ class TestWikiPageVersion:
                     wiki_page=wiki_page,
                     diff='bar'+str(i+1),
                     version=i+1,
-                    modified_on=datetime.utcnow()
+                    modified_on=time.time()
                 )
 
         query = (WikiPageVersion

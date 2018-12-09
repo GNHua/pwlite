@@ -15,7 +15,7 @@ from pwlite.models import WikiPage, WikiPageIndex, WikiKeypage, \
 from pwlite.wiki.forms import WikiEditForm, UploadForm, RenameForm, \
     SearchForm, KeyPageEditForm, HistoryRecoverForm
 from pwlite.diff import make_patch, apply_patches
-from pwlite.settings import DB_PATH
+from pwlite.settings import DB_PATH, TIMEZONE
 from pwlite.markdown import render_wiki_page, render_wiki_file
 
 blueprint = Blueprint('wiki', __name__, static_folder='../static', url_prefix='/<wiki_group>')
@@ -343,11 +343,12 @@ def search():
     if keyword and not keyword.isspace():
         filter = [WikiPageIndex.match(keyword)]
         if start_date:
-            temp = datetime.strptime(start_date, '%m/%d/%Y')
-            filter.append(WikiPage.modified_on > convert_utc_to_mdt(temp, reverse=True))
+            temp = datetime.strptime(start_date, '%m/%d/%Y').replace(tzinfo=TIMEZONE)
+            filter.append(WikiPage.modified_on > temp.timestamp())
         if end_date:
             temp = datetime.strptime(end_date, '%m/%d/%Y')+timedelta(days=1)
-            filter.append(WikiPage.modified_on < convert_utc_to_mdt(temp, reverse=True))
+            temp = temp.replace(tzinfo=TIMEZONE)
+            filter.append(WikiPage.modified_on < temp.timestamp())
 
         query = (WikiPage
                  .select(WikiPage.id, WikiPage.title, WikiPage.modified_on)
