@@ -1,15 +1,16 @@
 # -*- coding: utf-8 -*-
 """Wiki section, including wiki pages for each group."""
 from flask import Blueprint, g, render_template, redirect, url_for, \
-    request, flash, send_from_directory, abort, current_app
+    request, flash, send_from_directory, abort
 from datetime import datetime, timedelta
 import os
 import math
 import difflib
 
+from pwlite.decorators import decorate_blueprint
 from pwlite.extensions import db, markdown
 from pwlite.utils import flash_errors, xstr, get_object_or_404, \
-    calc_page_num, get_pagination_kwargs, convert_utc_to_local
+    calc_page_num, get_pagination_kwargs
 from pwlite.models import WikiPage, WikiPageIndex, WikiKeypage, \
     WikiPageVersion, WikiReference, WikiFile
 from pwlite.wiki.forms import WikiEditForm, UploadForm, RenameForm, \
@@ -19,80 +20,7 @@ from pwlite.settings import DB_PATH, TIMEZONE
 from pwlite.markdown import render_wiki_page, render_wiki_file
 
 blueprint = Blueprint('wiki', __name__, static_folder='../static', url_prefix='/<wiki_group>')
-
-
-@blueprint.url_defaults
-def add_wiki_group_code(endpoint, values):
-    if 'wiki_group' in values:
-        return
-
-    try:
-        values.setdefault('wiki_group', g.wiki_group)
-    except AttributeError:
-        pass
-
-
-@blueprint.url_value_preprocessor
-def pull_wiki_group_code(endpoint, values):
-    g.wiki_group = values.pop('wiki_group')
-    if g.wiki_group not in current_app.active_wiki_groups:
-        abort(404)
-
-
-@blueprint.before_request
-def open_database_connection():
-    db.pick('{0}.db'.format(g.wiki_group))
-
-
-@blueprint.after_request
-def close_database_connection(response):
-    db.close()
-    return response
-
-
-# Docs: http://flask.pocoo.org/docs/1.0/templating/#context-processors
-@blueprint.context_processor
-def inject_wiki_group_data():
-    if g.wiki_group not in current_app.active_wiki_groups:
-        return dict()
-
-    if request.path.startswith('/{0}/edit/'.format(g.wiki_group)) \
-        or request.path.startswith('/{0}/upload/'.format(g.wiki_group)):
-        return dict(wiki_group=g.wiki_group)
-
-    search_form = SearchForm()
-
-    query = (WikiPage
-             .select(WikiPage.id, WikiPage.title)
-             .join(
-                 WikiKeypage,
-                 on=(WikiKeypage.wiki_page))
-             .order_by(WikiKeypage.id))
-    wiki_keypages = query.execute()
-
-    # TODO: enhancement - this might be a performance bottleneck in the future.
-    query = (WikiPage
-             .select(WikiPage.id, WikiPage.title, WikiPage.modified_on)
-             .order_by(WikiPage.modified_on.desc())
-             .limit(5))
-    wiki_changes = query.execute()
-
-    latest_change_time = convert_utc_to_local(wiki_changes[0].modified_on)
-    now = convert_utc_to_local(datetime.utcnow())
-
-    if latest_change_time.date() == now.date():
-        latest_change_time = latest_change_time.strftime('[%H:%M]')
-    else:
-        latest_change_time = latest_change_time.strftime('[%b %d]')
-
-    return dict(
-        wiki_group=g.wiki_group,
-        search_form=search_form,
-        wiki_keypages=wiki_keypages,
-        wiki_changes=wiki_changes,
-        latest_change_time=latest_change_time,
-        convert_utc_to_local=convert_utc_to_local
-    )
+decorate_blueprint(blueprint)
 
 
 @blueprint.route('/home')
