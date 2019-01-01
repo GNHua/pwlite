@@ -92,10 +92,15 @@ class WikiMarkdown(markdown.Markdown):
         return self.toc, html
 
 
-def render_wiki_page(wiki_page_id, wiki_page_title, tostring=False):
+def render_wiki_page(
+    wiki_page_id,
+    wiki_page_title,
+    tostring=False
+):
     el = etree.Element('a', attrib={
+            'class': 'wiki-page',
             'href': '/{0}/page/{1}'.format(g.wiki_group, wiki_page_id)
-        })
+    })
     el.text = wiki_page_title
     if tostring:
         return etree.tostring(el, encoding='unicode') 
@@ -117,7 +122,10 @@ def render_wiki_file(
         wiki_file_name
     )
     if wiki_file_type == 'image':
-        el = etree.Element('img', attrib={'src': link})
+        el = etree.Element('img', attrib={
+            'class': 'wiki-file',
+            'src': link
+        })
         if w:
             el.attrib['width'] = str(w)
         if h:
@@ -130,7 +138,10 @@ def render_wiki_file(
             'height': '20'
         })
         sub_el.tail = wiki_file_name
-        el = etree.Element('a', attrib={'href': link})
+        el = etree.Element('a', attrib={
+            'class': 'wiki-file',
+            'href': link
+        })
         el.append(sub_el)
     if tostring:
         return etree.tostring(el, encoding='unicode') 

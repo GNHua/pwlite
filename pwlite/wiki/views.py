@@ -25,12 +25,7 @@ blueprint = Blueprint('wiki', __name__, static_folder='../static', url_prefix='/
 def add_wiki_group_code(endpoint, values):
     if 'wiki_group' in values:
         return
-
-    try:
-        values.setdefault('wiki_group', g.wiki_group)
-    except AttributeError:
-        pass
-
+    values.setdefault('wiki_group', g.wiki_group)
 
 @blueprint.url_value_preprocessor
 def pull_wiki_group_code(endpoint, values):

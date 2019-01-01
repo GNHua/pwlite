@@ -3,7 +3,6 @@
 from flask import flash, abort
 from peewee import DoesNotExist, SelectQuery
 from datetime import timezone
-import math
 
 from pwlite.settings import TIMEZONE
 
