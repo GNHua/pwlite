@@ -34,6 +34,6 @@
   </ul>
   <form class="form-inline my-2 my-md-0" method="POST" action="{{ url_for('wiki.search') }}">
     {{ search_form.csrf_token }}
-    {{ search_form.search(class_='form-control', placeholder='Search') }}
+    {{ search_form.keyword(class_='form-control', placeholder='Search') }}
   </form>
 </div>

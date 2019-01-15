@@ -266,7 +266,7 @@ def search():
     current_page_number=request.args.get('page', default=1, type=int)
     number_per_page = 100
     kwargs = dict()
-    form = SearchForm(search=keyword, start_date=start_date, end_date=end_date)
+    form = SearchForm(keyword=keyword, start_date=start_date, end_date=end_date)
 
     if keyword and not keyword.isspace():
         filter = [WikiPageIndex.match(keyword)]
@@ -285,7 +285,7 @@ def search():
                      on=(WikiPage.id==WikiPageIndex.docid))
                  .where(*filter)
                  .order_by(WikiPageIndex.rank(2.0, 1.0), WikiPage.modified_on.desc())
-                 .paginate(current_page_number, paginate_by=100))
+                 .paginate(current_page_number, paginate_by=number_per_page))
         total_page_number = math.ceil(WikiPage.select().count() / number_per_page)
         # TODO: add title-only search
         # query = query.where(WikiPage.title.contains(search_keyword))
@@ -295,7 +295,7 @@ def search():
     if form.validate_on_submit():
         return redirect(url_for(
             '.search',
-            keyword=form.search.data,
+            keyword=form.keyword.data,
             start=form.start_date.data,
             end=form.end_date.data
         ))
@@ -454,7 +454,7 @@ def group_admin():
 
 @blueprint.route('/all-pages')
 def all_pages():
-    current_page_number=request.args.get('page', default=1, type=int)
+    current_page_number = request.args.get('page', default=1, type=int)
     number_per_page = 100
     query = (WikiPage
              .select(WikiPage.id, WikiPage.title, WikiPage.modified_on)
@@ -474,7 +474,7 @@ def all_pages():
 
 @blueprint.route('/all-files')
 def all_files():
-    current_page_number=request.args.get('page', default=1, type=int)
+    current_page_number = request.args.get('page', default=1, type=int)
     number_per_page = 100
     query = (WikiFile
              .select()
@@ -490,6 +490,9 @@ def all_files():
     )
 
 # TODO: delete wiki files
+
+
+# TODO: add function to export a page as pdf
 
 
 @blueprint.route('/markdown')
