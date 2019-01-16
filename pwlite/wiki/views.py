@@ -492,7 +492,21 @@ def all_files():
 # TODO: delete wiki files
 
 
-# TODO: add function to export a page as pdf
+@blueprint.route('/pdf/<int:wiki_page_id>')
+def pdf(wiki_page_id):
+    wiki_page = get_object_or_404(
+        WikiPage.select(
+            WikiPage.id,
+            WikiPage.title,
+            WikiPage.html,
+            WikiPage.modified_on),
+        WikiPage.id==wiki_page_id
+    )
+
+    return render_template(
+        'wiki/pdf.html',
+        wiki_page=wiki_page,
+    )
 
 
 @blueprint.route('/markdown')

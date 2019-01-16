@@ -19,6 +19,7 @@
         <a class="dropdown-item" href="{{ url_for('wiki.rename', wiki_page_id=wiki_page.id) }}">Rename</a>
         {% endif %}
         <a class="dropdown-item" href="{{ url_for('wiki.history', wiki_page_id=wiki_page.id) }}">History</a>
+        <a class="dropdown-item" href="{{ url_for('wiki.pdf', wiki_page_id=wiki_page.id) }}">PDF</a>
         <a class="dropdown-item" href="{{ url_for('wiki.markdown_instructions') }}">Markdown</a>
       </div>
     </li>
