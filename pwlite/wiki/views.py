@@ -10,7 +10,7 @@ import difflib
 from pwlite.decorators import decorate_blueprint
 from pwlite.extensions import db, markdown
 from pwlite.utils import flash_errors, xstr, get_object_or_404, \
-    calc_page_num, get_pagination_kwargs
+    calc_page_num, get_pagination_kwargs, paginate
 from pwlite.models import WikiPage, WikiPageIndex, WikiKeypage, \
     WikiPageVersion, WikiReference, WikiFile
 from pwlite.wiki.forms import WikiEditForm, UploadForm, RenameForm, \
@@ -284,13 +284,10 @@ def search():
                      WikiPageIndex,
                      on=(WikiPage.id==WikiPageIndex.docid))
                  .where(*filter)
-                 .order_by(WikiPageIndex.rank(2.0, 1.0), WikiPage.modified_on.desc())
-                 .paginate(current_page_number, paginate_by=number_per_page))
-        total_page_number = math.ceil(WikiPage.select().count() / number_per_page)
+                 .order_by(WikiPageIndex.rank(2.0, 1.0), WikiPage.modified_on.desc()))
         # TODO: add title-only search
         # query = query.where(WikiPage.title.contains(search_keyword))
-        kwargs['data'] = query.execute()
-        get_pagination_kwargs(kwargs, current_page_number, total_page_number)
+        kwargs = paginate(query)
 
     if form.validate_on_submit():
         return redirect(url_for(
@@ -425,15 +422,10 @@ def keypage_edit():
 # TODO: enhancement - choose number of changes, sort by arbitrary column
 @blueprint.route('/changes')
 def changes():
-    current_page_number=request.args.get('page', default=1, type=int)
-    number_per_page = 100
     query = (WikiPage
              .select(WikiPage.id, WikiPage.title, WikiPage.modified_on)
-             .order_by(WikiPage.modified_on.desc())
-             .paginate(current_page_number, paginate_by=number_per_page))
-    total_page_number = math.ceil(WikiPage.select().count() / number_per_page)
-    kwargs = dict(data=query.execute(), number_per_page=number_per_page)
-    get_pagination_kwargs(kwargs, current_page_number, total_page_number)
+             .order_by(WikiPage.modified_on.desc()))
+    kwargs = paginate(query)
 
     return render_template(
         'wiki/changes.html',
@@ -454,15 +446,10 @@ def group_admin():
 
 @blueprint.route('/all-pages')
 def all_pages():
-    current_page_number = request.args.get('page', default=1, type=int)
-    number_per_page = 100
     query = (WikiPage
              .select(WikiPage.id, WikiPage.title, WikiPage.modified_on)
-             .order_by(WikiPage.id)
-             .paginate(current_page_number, paginate_by=number_per_page))
-    total_page_number = math.ceil(WikiPage.select().count() / number_per_page)
-    kwargs = dict(data=query.execute())
-    get_pagination_kwargs(kwargs, current_page_number, total_page_number)
+             .order_by(WikiPage.id))
+    kwargs = paginate(query)
 
     return render_template(
         'wiki/all_pages.html',
@@ -474,15 +461,10 @@ def all_pages():
 
 @blueprint.route('/all-files')
 def all_files():
-    current_page_number = request.args.get('page', default=1, type=int)
-    number_per_page = 100
     query = (WikiFile
              .select()
-             .order_by(WikiFile.id)
-             .paginate(current_page_number, paginate_by=number_per_page))
-    total_page_number = math.ceil(WikiFile.select().count() / number_per_page)
-    kwargs = dict(data=query.execute())
-    get_pagination_kwargs(kwargs, current_page_number, total_page_number)
+             .order_by(WikiFile.id))
+    kwargs = paginate(query)
 
     return render_template(
         'wiki/all_files.html',
