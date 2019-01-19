@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """Wiki section, including wiki pages for each group."""
 from flask import Blueprint, g, render_template, redirect, url_for, \
-    request, flash, send_from_directory, abort
+    request, flash, send_from_directory, current_app
 from datetime import datetime, timedelta
 import os
 import math
@@ -10,13 +10,12 @@ import difflib
 from pwlite.decorators import decorate_blueprint
 from pwlite.extensions import db, markdown
 from pwlite.utils import flash_errors, xstr, get_object_or_404, \
-    calc_page_num, get_pagination_kwargs, paginate
+    get_pagination_kwargs, paginate
 from pwlite.models import WikiPage, WikiPageIndex, WikiKeypage, \
     WikiPageVersion, WikiReference, WikiFile
 from pwlite.wiki.forms import WikiEditForm, UploadForm, RenameForm, \
     SearchForm, KeyPageEditForm, HistoryRecoverForm
 from pwlite.diff import make_patch, apply_patches
-from pwlite.settings import DB_PATH, TIMEZONE
 from pwlite.markdown import render_wiki_page, render_wiki_file
 
 blueprint = Blueprint('wiki', __name__, static_folder='../static', url_prefix='/<wiki_group>')
@@ -113,7 +112,11 @@ def handle_upload():
                 mime_type=file.mimetype
             )
             # save uploaded file with WikiFile.id as filename
-            file.save(os.path.join(DB_PATH, g.wiki_group, str(wiki_file.id)))
+            file.save(os.path.join(
+                current_app.config['DB_PATH'],
+                g.wiki_group,
+                str(wiki_file.id)
+            ))
             wiki_file.size = file.tell()
             wiki_file.save()
 
@@ -251,7 +254,7 @@ def file(wiki_file_id):
         fn = wiki_file.name
 
     return send_from_directory(
-        os.path.join(DB_PATH, g.wiki_group),
+        os.path.join(current_app.config['DB_PATH'], g.wiki_group),
         str(wiki_file_id),
         as_attachment=True,
         attachment_filename=fn
@@ -271,11 +274,12 @@ def search():
     if keyword and not keyword.isspace():
         filter = [WikiPageIndex.match(keyword)]
         if start_date:
-            temp = datetime.strptime(start_date, '%m/%d/%Y').replace(tzinfo=TIMEZONE)
+            temp = datetime.strptime(start_date, '%m/%d/%Y')
+            temp = temp.replace(tzinfo=current_app.config['TIMEZONE'])
             filter.append(WikiPage.modified_on > temp.timestamp())
         if end_date:
             temp = datetime.strptime(end_date, '%m/%d/%Y')+timedelta(days=1)
-            temp = temp.replace(tzinfo=TIMEZONE)
+            temp = temp.replace(tzinfo=current_app.config['TIMEZONE'])
             filter.append(WikiPage.modified_on < temp.timestamp())
 
         query = (WikiPage

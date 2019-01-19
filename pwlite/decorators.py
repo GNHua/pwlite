@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from flask import g, current_app, request
+from flask import g, current_app, request, abort
 from datetime import datetime
 
 from pwlite.extensions import db
@@ -41,8 +41,7 @@ def decorate_blueprint(blueprint):
             return dict()
 
         if request.endpoint in [
-            'wiki.edit', 'wiki.upload',
-            'auth.login', 'auth.logout'
+            'wiki.edit', 'wiki.upload', 'wiki.handle_upload', 'wiki.file'
         ]:
             return dict(wiki_group=g.wiki_group)
 

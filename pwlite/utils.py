@@ -1,11 +1,9 @@
 # -*- coding: utf-8 -*-
 """Helper utilities and decorators."""
-from flask import flash, abort, request
+from flask import flash, abort, current_app, request
 from peewee import DoesNotExist, SelectQuery
 from datetime import timezone
 import math
-
-from pwlite.settings import TIMEZONE
 
 
 def flash_errors(form, category='warning'):
@@ -59,4 +57,4 @@ def paginate(query):
 
 
 def convert_utc_to_local(datetime):
-    return datetime.replace(tzinfo=timezone.utc).astimezone(TIMEZONE)
+    return datetime.replace(tzinfo=timezone.utc).astimezone(current_app.config['TIMEZONE'])
