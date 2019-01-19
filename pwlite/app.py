@@ -73,7 +73,7 @@ def register_database(app):
     admin_db_exists = os.path.exists(os.path.join(
         app.config['DB_PATH'], app.config['ADMIN_DB']
     ))
-    with app.app_context(:)
+    with app.app_context():
         db.pick(app.config['ADMIN_DB'])
     if not admin_db_exists:
         db.create_tables([WikiGroup])
