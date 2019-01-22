@@ -51,7 +51,7 @@ def paginate(query):
     number_per_page = 100
     total_page_number = math.ceil(query.count() / number_per_page)
     query = query.paginate(current_page_number, paginate_by=number_per_page)
-    kwargs = dict(data=query.execute())
+    kwargs = dict(data=query.execute(), number_per_page=number_per_page)
     get_pagination_kwargs(kwargs, current_page_number, total_page_number)
     return kwargs
 
