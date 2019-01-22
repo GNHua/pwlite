@@ -45,7 +45,7 @@ class WikiPage(BaseModel):
     current_version = IntegerField(default=1)
     modified_on = TimestampField(resolution=1000, utc=True)
 
-    def update_content(self, diff, markdown, html, toc):
+    def update_db(self, diff, markdown, html, toc):
         WikiPageVersion.create(
             wiki_page=self,
             diff=diff,
@@ -74,7 +74,7 @@ class WikiPage(BaseModel):
          .where(WikiReference.referenced.in_(g.wiki_refs))
          .execute())
 
-    def update_content_after_upload(self, diff, file_markdown, file_html):
+    def update_db_after_upload(self, diff, file_markdown, file_html):
         WikiPageVersion.create(
             wiki_page=self,
             diff=diff,

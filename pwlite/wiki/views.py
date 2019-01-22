@@ -61,7 +61,6 @@ def edit(wiki_page_id):
 
     if form.validate_on_submit():
         if form.current_version.data == wiki_page.current_version:
-            g.wiki_page = wiki_page
             g.wiki_refs = list(WikiPage
                                .select(WikiPage.id)
                                .join(WikiReference, on=WikiReference.referenced)
@@ -71,8 +70,8 @@ def edit(wiki_page_id):
             diff = make_patch(wiki_page.markdown, form.textArea.data)
             if diff:
                 with db.atomic():
-                    toc, html = markdown(form.textArea.data)
-                    wiki_page.update_content(diff, form.textArea.data, html, toc)
+                    toc, html = markdown(wiki_page, form.textArea.data)
+                    wiki_page.update_db(diff, form.textArea.data, html, toc)
 
             return redirect(url_for('.page', wiki_page_id=wiki_page.id))
         else:
@@ -128,8 +127,7 @@ def handle_upload():
             file_html += '<p>{}</p>'.format(render_wiki_file(
                 wiki_file.id,
                 wiki_file.name,
-                file_type,
-                tostring=True
+                file_type
             ))
 
         if upload_from_upload_page:
@@ -143,7 +141,7 @@ def handle_upload():
             )
 
             diff = make_patch(xstr(wiki_page.markdown), xstr(wiki_page.markdown)+file_markdown)
-            wiki_page.update_content_after_upload(diff, file_markdown, file_html)
+            wiki_page.update_db_after_upload(diff, file_markdown, file_html)
 
             return ''
 
@@ -195,8 +193,8 @@ def rename(wiki_page_id):
                 old_markdown = '[[{}]]'.format(wiki_page.title)
                 new_markdown = '[[{}]]'.format(new_title)
 
-                old_html = render_wiki_page(wiki_page.id, wiki_page.title, tostring=True)
-                new_html = render_wiki_page(wiki_page.id, new_title, tostring=True)
+                old_html = render_wiki_page(wiki_page.id, wiki_page.title)
+                new_html = render_wiki_page(wiki_page.id, new_title)
 
                 # update the markdown of referencing wiki page 
                 query = (WikiPage
@@ -259,6 +257,9 @@ def file(wiki_file_id):
         as_attachment=True,
         attachment_filename=fn
     )
+
+
+# TODO: add function to replace uploaded file
 
 
 @blueprint.route('/search', methods=['GET', 'POST'])
@@ -333,7 +334,6 @@ def history(wiki_page_id):
             old_to_current_patches = [pv.diff for pv in wiki_page_versions]
             recovered_content = apply_patches(wiki_page.markdown, old_to_current_patches, revert=True)
 
-            g.wiki_page = wiki_page
             g.wiki_refs = list(WikiPage
                                .select(WikiPage.id)
                                .join(WikiReference, on=WikiReference.referenced)
@@ -343,8 +343,8 @@ def history(wiki_page_id):
             diff = make_patch(wiki_page.markdown, recovered_content)
             if diff:
                 with db.atomic():
-                    toc, html = markdown(recovered_content)
-                    wiki_page.update_content(diff, recovered_content, html, toc)
+                    toc, html = markdown(wiki_page, recovered_content)
+                    wiki_page.update_db(diff, recovered_content, html, toc)
             return redirect(url_for('.page', wiki_page_id=wiki_page.id))
 
     old_ver_num = request.args.get('version', default=wiki_page.current_version-1, type=int)
