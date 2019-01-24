@@ -125,6 +125,6 @@ def render_wiki_file(
     elif wiki_file_type == 'file':
         return (
         '<a class="wiki-file" href="{0}">'
-        '<img alt="file icon" height="20" src="/static/icons/file-icon.png" width="20" />'
+        '<img alt="file icon" height="20" src="/static/images/file-icon.png" width="20" />'
         '{1}</a>'.format(link, wiki_file_name)
         )
