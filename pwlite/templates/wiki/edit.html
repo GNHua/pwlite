@@ -43,9 +43,7 @@
       </div>
     </div>
 
-    <form action="{{ url_for('wiki.handle_upload') }}" method="POST" enctype="multipart/form-data" class='d-none' id="upload-form">
-      {{ upload_form.file(multiple='', id='file-picker') }}
-    </form>
+    <input id="file-picker" multiple name="file" type="file" class="d-none">
 
     {{ javascript_tag('editor/lib/highlight.pack.js') }}
     {{ javascript_tag('editor/codemirror/lib/codemirror.js') }}

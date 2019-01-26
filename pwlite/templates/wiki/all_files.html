@@ -1,5 +1,10 @@
 {% extends 'wiki/layout.html' %}
 
+{% block css %}
+{{ super() }}
+{{ stylesheet_tag('css/custom_menu.css') }}
+{% endblock css %}
+
 {% block header %}
 All Files
 {% endblock header %}
@@ -25,7 +30,7 @@ All Files
     {% for wiki_file in data %}
     <tr>
       <th scope="row">{{ wiki_file.id }}</th>
-      <td><a href="{{ url_for('wiki.file', wiki_file_id=wiki_file.id) }}">{{ wiki_file.name }}</a></td>
+      <td><a class="wiki-file" href="{{ url_for('wiki.file', wiki_file_id=wiki_file.id) }}">{{ wiki_file.name }}</a></td>
       <td>{{ wiki_file.mime_type }}</td>
       <td>{{ wiki_file.size }}</td>
       <td>{{ convert_utc_to_local(wiki_file.uploaded_on).strftime('%Y-%m-%d %H:%M:%S') }}</td>
@@ -37,3 +42,21 @@ All Files
 {% include 'wiki/pagination.html' %}
 <br><br><br><br><br><br><br><br>
 {% endblock other_content %}
+
+{% block custom_menu %}
+<ul class='custom-menu'>
+  <li data-action="Download">Download</li>
+  <li data-action="Replace">Replace</li>
+</ul>
+<input id="file-picker" name="file" type="file" class="d-none">
+{% endblock custom_menu %}
+
+{% block js %}
+{{ super() }}
+
+<script type="text/javascript">
+let wiki_group = '{{ wiki_group }}';
+</script>
+
+{{ javascript_tag('js/replace_file.js') }}
+{% endblock js %}

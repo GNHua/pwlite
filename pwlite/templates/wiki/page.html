@@ -1,5 +1,10 @@
 {% extends 'wiki/layout.html' %}
 
+{% block css %}
+{{ super() }}
+{{ stylesheet_tag('css/custom_menu.css') }}
+{% endblock css %}
+
 {% block header %}
 {{ wiki_page.title }}
 {% endblock header %}
@@ -19,3 +24,21 @@
 </div>
 <br><br><br><br><br><br><br><br>
 {% endblock content %}
+
+{% block custom_menu %}
+<ul class='custom-menu'>
+  <li data-action="Download">Download</li>
+  <li data-action="Replace">Replace</li>
+</ul>
+<input id="file-picker" name="file" type="file" class="d-none">
+{% endblock custom_menu %}
+
+{% block js %}
+{{ super() }}
+
+<script type="text/javascript">
+let wiki_group = '{{ wiki_group }}';
+</script>
+
+{{ javascript_tag('js/replace_file.js') }}
+{% endblock js %}

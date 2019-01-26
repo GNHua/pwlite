@@ -13,7 +13,7 @@ from pwlite.utils import flash_errors, xstr, get_object_or_404, \
     get_pagination_kwargs, paginate
 from pwlite.models import WikiPage, WikiPageIndex, WikiKeypage, \
     WikiPageVersion, WikiReference, WikiFile
-from pwlite.wiki.forms import WikiEditForm, UploadForm, RenameForm, \
+from pwlite.wiki.forms import WikiEditForm, RenameForm, \
     SearchForm, KeyPageEditForm, HistoryRecoverForm
 from pwlite.diff import make_patch, apply_patches
 from pwlite.markdown import render_wiki_page, render_wiki_file
@@ -57,14 +57,13 @@ def edit(wiki_page_id):
         WikiPage.id==wiki_page_id
     )
     form = WikiEditForm()
-    upload_form = UploadForm()
 
     if form.validate_on_submit():
         if form.current_version.data == wiki_page.current_version:
             g.wiki_refs = list(WikiPage
                                .select(WikiPage.id)
                                .join(WikiReference, on=WikiReference.referenced)
-                               .where(WikiReference.referencing == wiki_page)
+                               .where(WikiReference.referencing==wiki_page)
                                .execute())
 
             diff = make_patch(wiki_page.markdown, form.textArea.data)
@@ -81,18 +80,15 @@ def edit(wiki_page_id):
     return render_template(
         'wiki/edit.html',
         wiki_page=wiki_page,
-        form=form,
-        upload_form=upload_form
+        form=form
     )
 
 
 @blueprint.route('/upload/<int:wiki_page_id>')
 def upload(wiki_page_id):
-    form = UploadForm()
     return render_template(
         'wiki/upload.html', 
-        wiki_page_id=wiki_page_id,
-        form=form
+        wiki_page_id=wiki_page_id
     )
 
 
@@ -146,6 +142,45 @@ def handle_upload():
             return ''
 
     return file_markdown
+
+
+@blueprint.route('/replace-file', methods=['POST'])
+def replace_file():
+    form = request.form
+    file = request.files['wiki_file']
+    wiki_file_id = form.get('wiki_file_id', None)
+    wiki_file_markdown = '[file:{0}]'.format(wiki_file_id)
+
+    # save uploaded file with WikiFile.id as filename
+    file.save(os.path.join(
+        current_app.config['DB_PATH'],
+        g.wiki_group,
+        wiki_file_id
+    ))
+
+    wiki_file = WikiFile.get_or_none(WikiFile.id==int(wiki_file_id))
+
+    with db.atomic():
+        (WikiFile
+         .update(
+             name=file.filename,
+             mime_type=file.mimetype,
+             size=file.tell())
+         .where(WikiFile.id==int(wiki_file_id))
+         .execute())
+
+        if wiki_file and wiki_file.name != file.filename:
+            query = (WikiPage
+                     .select(WikiPage.id, WikiPage.markdown)
+                     .where(WikiPage.markdown.contains(wiki_file_markdown)))
+            for wiki_page in query.execute():
+                toc, html = markdown(wiki_page, wiki_page.markdown)
+                (WikiPage
+                .update(toc=toc, html=html)
+                .where(WikiPage.id==wiki_page.id)
+                .execute())
+
+    return ''
 
 
 @blueprint.route('/reference/<int:wiki_page_id>')

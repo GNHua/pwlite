@@ -27,7 +27,9 @@ class WikiRenderer(TocMixin, Renderer):
 
         try:
             g.wiki_refs.remove(wiki_page)
-        except ValueError:
+        # AttributeError: g.wiki_refs not exist
+        # ValueError: wiki_page not in g.wiki_refs
+        except (AttributeError, ValueError):
             pass
 
         return render_wiki_page(wiki_page.id, wiki_page_title)
