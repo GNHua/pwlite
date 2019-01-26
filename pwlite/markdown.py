@@ -111,11 +111,7 @@ def render_wiki_file(
     w=0,
     h=0
 ):
-    link = '/{0}/file/{1}?filename={2}'.format(
-        g.wiki_group,
-        wiki_file_id,
-        wiki_file_name
-    )
+    link = '/{0}/file/{1}'.format(g.wiki_group, wiki_file_id)
 
     if wiki_file_type == 'image':
         temp = ['src={0}'.format(link)]

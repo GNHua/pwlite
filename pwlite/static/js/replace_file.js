@@ -38,7 +38,20 @@ $(".custom-menu li").click(function(){
   switch($(this).attr("data-action")) {
 
     // A case for each action. Your actions here
-    case "Download": selected_wiki_file.click(); break;
+    case "Download": {
+      switch(selected_wiki_file.tagName) {
+        case "A": selected_wiki_file.click(); break;
+        case "IMG": {
+          let a  = document.createElement('a');
+          a.href = selected_wiki_file.src;
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          break;
+        }
+      }
+      break;
+    }
     case "Replace": document.getElementById('file-picker').click(); break;
   }
 

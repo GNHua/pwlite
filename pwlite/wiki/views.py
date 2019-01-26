@@ -278,23 +278,17 @@ def rename(wiki_page_id):
 
 @blueprint.route('/file/<int:wiki_file_id>')
 def file(wiki_file_id):
-    fn = request.args.get('filename')
-    if not fn:
-        wiki_file = get_object_or_404(
-            WikiFile.select(WikiFile.id, WikiFile.name),
-            WikiFile.id==wiki_file_id
-        )
-        fn = wiki_file.name
+    wiki_file = get_object_or_404(
+        WikiFile.select(WikiFile.id, WikiFile.name),
+        WikiFile.id==wiki_file_id
+    )
 
     return send_from_directory(
         os.path.join(current_app.config['DB_PATH'], g.wiki_group),
         str(wiki_file_id),
         as_attachment=True,
-        attachment_filename=fn
+        attachment_filename=wiki_file.name
     )
-
-
-# TODO: add function to replace uploaded file
 
 
 @blueprint.route('/search', methods=['GET', 'POST'])
