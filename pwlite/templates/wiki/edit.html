@@ -24,10 +24,9 @@
   <body id="toplevel">
     <div id="in"><form method="POST">
       {{ form.csrf_token }}
-      {% set f = form.textArea.process_data(wiki_page.markdown) %}
       {{ form.textArea(id='code') }}
       {{ form.submit(id='save', class_='hidden') }}
-      {{ form.current_version(value=wiki_page.current_version, readonly=true, class_='hidden') }}
+      {{ form.current_version(readonly=true, class_='hidden') }}
     </form></div>
     <div id="out" class="markdown-body"></div>
     <div id="navbar">

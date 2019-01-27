@@ -56,21 +56,26 @@ def edit(wiki_page_id):
             WikiPage.modified_on),
         WikiPage.id==wiki_page_id
     )
-    form = WikiEditForm()
+    form = WikiEditForm(
+        textArea=wiki_page.markdown,
+        current_version=wiki_page.current_version,
+    )
 
     if form.validate_on_submit():
         if form.current_version.data == wiki_page.current_version:
-            g.wiki_refs = list(WikiPage
-                               .select(WikiPage.id)
-                               .join(WikiReference, on=WikiReference.referenced)
-                               .where(WikiReference.referencing==wiki_page)
-                               .execute())
-
-            diff = make_patch(wiki_page.markdown, form.textArea.data)
+            g.wiki_refs = list(
+                WikiPage
+                .select(WikiPage.id)
+                .join(WikiReference, on=WikiReference.referenced)
+                .where(WikiReference.referencing==wiki_page)
+                .execute()
+            )
+            md = form.textArea.data
+            diff = make_patch(wiki_page.markdown, md)
             if diff:
                 with db.atomic():
-                    toc, html = markdown(wiki_page, form.textArea.data)
-                    wiki_page.update_db(diff, form.textArea.data, html, toc)
+                    toc, html = markdown(wiki_page, md)
+                    wiki_page.update_db(diff, md, html, toc)
 
             return redirect(url_for('.page', wiki_page_id=wiki_page.id))
         else:
