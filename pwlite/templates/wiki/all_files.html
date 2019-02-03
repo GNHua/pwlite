@@ -3,6 +3,13 @@
 {% block css %}
 {{ super() }}
 {{ stylesheet_tag('css/custom_menu.css') }}
+<style>
+  .table div {
+    white-space: nowrap; 
+    overflow: hidden;
+    text-overflow: ellipsis; 
+  }
+</style>
 {% endblock css %}
 
 {% block header %}
@@ -15,25 +22,24 @@ All Files
 {%- endmacro %}
 
 {% include 'wiki/pagination.html' %}
-
 <table class="table table-sm">
   <thead>
-    <tr>
-      <th scope="col">ID</th>
-      <th scope="col">Name</th>
-      <th scope="col">Type</th>
-      <th scope="col">Size (Bytes)</th>
-      <th scope="col">Uploaded on</th>
+    <tr class="row m-0">
+      <th class="d-inline-block col-1">ID</th>
+      <th class="d-inline-block col-5 pr-4">Name</th>
+      <th class="d-inline-block col-2 pr-4">Type</th>
+      <th class="d-inline-block col-2">Size (Bytes)</th>
+      <th class="d-inline-block col-2">Uploaded on</th>
     </tr>
   </thead>
   <tbody>
     {% for wiki_file in data %}
-    <tr>
-      <th scope="row">{{ wiki_file.id }}</th>
-      <td><a class="wiki-file" href="{{ url_for('wiki.file', wiki_file_id=wiki_file.id) }}">{{ wiki_file.name }}</a></td>
-      <td>{{ wiki_file.mime_type }}</td>
-      <td>{{ wiki_file.size }}</td>
-      <td>{{ convert_utc_to_local(wiki_file.uploaded_on).strftime('%Y-%m-%d %H:%M:%S') }}</td>
+    <tr class="row m-0">
+      <th class="d-inline-block col-1">{{ wiki_file.id }}</th>
+      <td class="d-inline-block col-5 pr-4"><div><a class="wiki-file" href="{{ url_for('wiki.file', wiki_file_id=wiki_file.id) }}" title="{{ wiki_file.name }}">{{ wiki_file.name }}</a></div></td>
+      <td class="d-inline-block col-2 pr-4" title="{{ wiki_file.mime_type }}"><div>{{ wiki_file.mime_type }}</div></td>
+      <td class="d-inline-block col-2">{{ wiki_file.size }}</td>
+      <td class="d-inline-block col-2">{{ convert_utc_to_local(wiki_file.uploaded_on).strftime('%Y-%m-%d %H:%M:%S') }}</td>
     </tr>
     {% endfor %}
   </tbody>
