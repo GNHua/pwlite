@@ -13,7 +13,7 @@
       {{ wiki_page.html | safe }}
       {% endif %}
       <div align="right" class="border-bottom border-secondary">
-        <i><small>modified on {{ wiki_page.modified_on.strftime('%Y-%m-%d %H:%M:%S %Z') }}</small></i>
+        <i><small>modified on {{ convert_utc_to_local(wiki_page.modified_on).strftime('%Y-%m-%d %H:%M:%S %Z') }}</small></i>
       </div>
     </div>
   </main>
