@@ -1,4 +1,7 @@
 let selected_wiki_file;
+let dummy_download_file = document.createElement('a');
+dummy_download_file.download = '';
+document.body.appendChild(dummy_download_file);
 
 // Trigger action when the contexmenu is about to be shown
 $('.wiki-file').bind("contextmenu", function (event) {
@@ -34,24 +37,16 @@ $(document).bind("mousedown", function (e) {
 // If the menu element is clicked
 $(".custom-menu li").click(function(){
 
+  if (selected_wiki_file.tagName === 'IMG') {
+    dummy_download_file.href = selected_wiki_file.src;
+  } else {
+    dummy_download_file.href = selected_wiki_file.href;
+  }
+
   // This is the triggered action name
   switch($(this).attr("data-action")) {
-
     // A case for each action. Your actions here
-    case "Download": {
-      switch(selected_wiki_file.tagName) {
-        case "A": selected_wiki_file.click(); break;
-        case "IMG": {
-          let a  = document.createElement('a');
-          a.href = selected_wiki_file.src;
-          document.body.appendChild(a);
-          a.click();
-          document.body.removeChild(a);
-          break;
-        }
-      }
-      break;
-    }
+    case "Download": dummy_download_file.click(); break;
     case "Replace": document.getElementById('file-picker').click(); break;
   }
 
@@ -72,7 +67,7 @@ function doUpload(file) {
   let fd = new FormData();
   fd.append('wiki_file', file);
 
-  let str = selected_wiki_file.pathname.split('/');
+  let str = dummy_download_file.pathname.split('/');
   fd.append('wiki_file_id', str[str.length-1]);
 
   $.ajaxSetup({
