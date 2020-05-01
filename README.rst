@@ -16,3 +16,8 @@ Run the following commands to bootstrap your environment ::
     python run.py
 
 Open browser and go to http://localhost:31415.
+
+TODO
+----
+
+1. Update dependencies
