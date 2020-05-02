@@ -341,21 +341,21 @@ def search():
     form = SearchForm(search=keyword, start_date=start_date, end_date=end_date)
 
     if keyword and not keyword.isspace():
-        filter = [WikiPageIndex.match(keyword)]
+        filters = [WikiPageIndex.match(keyword)]
         if start_date:
             temp = datetime.strptime(start_date, '%m/%d/%Y').replace(tzinfo=TIMEZONE)
-            filter.append(WikiPage.modified_on > temp.timestamp())
+            filters.append(WikiPage.modified_on > temp.timestamp())
         if end_date:
             temp = datetime.strptime(end_date, '%m/%d/%Y')+timedelta(days=1)
             temp = temp.replace(tzinfo=TIMEZONE)
-            filter.append(WikiPage.modified_on < temp.timestamp())
+            filters.append(WikiPage.modified_on < temp.timestamp())
 
         query = (WikiPage
                  .select(WikiPage.id, WikiPage.title, WikiPage.modified_on)
                  .join(
                      WikiPageIndex,
                      on=(WikiPage.id==WikiPageIndex.docid))
-                 .where(*filter)
+                 .where(*filters)
                  .order_by(WikiPageIndex.rank(2.0, 1.0), WikiPage.modified_on.desc())
                  .paginate(current_page_number, paginate_by=100))
         total_page_number = math.ceil(WikiPage.select().count() / number_per_page)
