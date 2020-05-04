@@ -4,12 +4,6 @@
 {{ wiki_page.title }}
 {% endblock header %}
 
-{% block toc %}
-{% if wiki_page.toc %}
-{{ wiki_page.toc | safe }}
-{% endif %}
-{% endblock toc %}
-
 {% block content %}
 {% if wiki_page.html %}
 {{ wiki_page.html | safe }}

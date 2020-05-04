@@ -445,6 +445,8 @@ def history(wiki_page_id):
     kwargs = dict()
     get_pagination_kwargs(kwargs, old_ver_num, wiki_page.current_version-1)
 
+    # manually set toc to empty string to prevent toc from being generated in html
+    wiki_page.toc = ''
     return render_template(
         'wiki/history.html',
         wiki_page=wiki_page,
