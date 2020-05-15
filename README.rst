@@ -20,4 +20,7 @@ Open browser and go to http://localhost:31415.
 TODO
 ----
 
-1. Update dependencies
+1. Update Python and dependencies
+2. Add User and authentication
+3. Add filter by User in Recent Changes and Search
+4. Integrate reverse proxy to make app self-contained - This might lead to re-writting the entire project in Java or Go.
