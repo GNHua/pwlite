@@ -307,7 +307,7 @@ def search():
     form = SearchForm(keyword=keyword, start_date=start_date, end_date=end_date)
 
     if keyword and not keyword.isspace():
-        filters = [WikiPageIndex.match(keyword)]
+        filters = [WikiPageIndex.match(WikiPageIndex.clean_query(keyword))]
         if start_date:
             temp = datetime.strptime(start_date, '%m/%d/%Y')
             temp = temp.replace(tzinfo=current_app.config['TIMEZONE'])

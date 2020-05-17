@@ -28,6 +28,7 @@ docs/_build
 
 # Virtualenvs
 env/
+winenv/
 
 # Configuration
 .env

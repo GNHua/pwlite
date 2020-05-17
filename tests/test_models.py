@@ -228,7 +228,7 @@ class TestWikiPage:
                  .join(
                      WikiPageIndex,
                      on=(WikiPage.id == WikiPageIndex.rowid))
-                 .where(WikiPageIndex.match('foo bar'))
+                 .where(WikiPageIndex.match(WikiPageIndex.clean_query('foo bar')))
                  .order_by(WikiPageIndex.bm25(3.0, 2.0)))
         wiki_page = query.execute()[0]
         count = query.count()
