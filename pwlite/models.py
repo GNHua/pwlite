@@ -26,15 +26,6 @@ class BaseFTSModel(FTSModel):
         database = db
 
 
-class WikiGroup(BaseModel):
-    name = CharField(unique=True)
-    db_name = CharField(unique=True)
-    active = BooleanField(default=True)
-
-    def db_filename(self):
-        return '{0}.db'.format(self.db_name)
-
-
 class WikiPage(BaseModel):
     """Model of wiki pages.
     """

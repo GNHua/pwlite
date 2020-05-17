@@ -19,7 +19,7 @@ text-center
           <a class="nav-link dropdown-toggle active" href="#" id="dropdown01" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Wiki Groups</a>
           <div class="dropdown-menu" aria-labelledby="dropdown01">
             {% for wiki_group in active_wiki_groups %}
-            <a class="dropdown-item" href="{{ url_for('wiki.home', wiki_group=wiki_group.db_name) }}">{{ wiki_group.name }}</a>
+            <a class="dropdown-item" href="{{ url_for('wiki.home', wiki_group=wiki_group) }}">{{ wiki_group }}</a>
             {% endfor %}
           </div>
         </div>

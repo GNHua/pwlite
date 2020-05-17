@@ -5,7 +5,7 @@ from datetime import datetime
 from pwlite.extensions import db
 from pwlite.wiki.forms import SearchForm
 from pwlite.models import WikiPage, WikiKeypage
-from pwlite.utils import convert_utc_to_local
+from pwlite.utils import wiki_group_active, convert_utc_to_local
 
 
 def decorate_blueprint(blueprint):
@@ -22,12 +22,12 @@ def decorate_blueprint(blueprint):
     @blueprint.url_value_preprocessor
     def pull_wiki_group_code(endpoint, values):
         g.wiki_group = values.pop('wiki_group')
-        if g.wiki_group not in current_app.active_wiki_groups:
+        if not wiki_group_active(g.wiki_group):
             abort(404)
 
     @blueprint.before_request
     def open_database_connection():
-        db.pick('{0}.db'.format(g.wiki_group))
+        db.pick(f'{g.wiki_group}{current_app.config["ACTIVE_DB_SUFFIX"]}')
 
     @blueprint.after_request
     def close_database_connection(response):
@@ -37,9 +37,6 @@ def decorate_blueprint(blueprint):
     # Docs: http://flask.pocoo.org/docs/1.0/templating/#context-processors
     @blueprint.context_processor
     def inject_wiki_group_data():
-        if g.wiki_group not in current_app.active_wiki_groups:
-            return dict()
-
         if request.endpoint in [
             'wiki.edit', 'wiki.upload', 'wiki.handle_upload', 'wiki.file'
         ]:

@@ -29,7 +29,7 @@
   </div>
 </div>
 
-{% if all_wiki_groups %}
+{% if all_wiki_groups_sorted %}
 <table id="current-wiki-groups" class="table table-left">
   <thead>
     <tr>
@@ -47,20 +47,20 @@
         {% else %}
           {% set checked = '' %}
         {% endif %}
-        <input type="checkbox" onclick="location.href='{{ url_for('admin.activate', wiki_group=wiki_group.db_name) }}'" {{ checked }}>
+        <input type="checkbox" onclick="location.href='{{ url_for('admin.activate', wiki_group=wiki_group) }}'" {{ checked }}>
         <span class="slider round"></span>
       </label>
     </td>
     {%- endmacro %}
-    {% for wiki_group in all_wiki_groups %}
+    {% for wiki_group, is_active in all_wiki_groups_sorted %}
     <tr>
-      {% if wiki_group.active %}
-      <td><a href="{{ url_for('wiki.home', wiki_group=wiki_group.db_name) }}">{{ wiki_group.name }}</a></td>
+      {% if is_active %}
+      <td><a href="{{ url_for('wiki.home', wiki_group=wiki_group) }}">{{ wiki_group }}</a></td>
       {% else %}
-      <td>{{ wiki_group.db_name }}</td>
+      <td>{{ wiki_group }}</td>
       {% endif %}
-      {{ toggle_switch(wiki_group, wiki_group.active) }}
-      <td><a href="{{ url_for('admin.delete_group', wiki_group=wiki_group.db_name) }}" class="btn btn-danger delete-db" role="button" aria-pressed="true">delete</a></td>
+      {{ toggle_switch(wiki_group, is_active) }}
+      <td><a href="{{ url_for('admin.delete_group', wiki_group=wiki_group) }}" class="btn btn-danger delete-wiki-group" role="button" aria-pressed="true">delete</a></td>
     </tr>
     {% endfor %}
   </tbody>
@@ -71,7 +71,7 @@
 {% block js %}
 {{ super() }}
 <script type="text/javascript">
-  var elems = document.getElementsByClassName('delete-db');
+  var elems = document.getElementsByClassName('delete-wiki-group');
   var confirmIt = function (e) {
       if (!confirm('Are you sure to delete this group?')) e.preventDefault();
   };

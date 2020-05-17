@@ -3,7 +3,9 @@
 from flask import flash, abort, current_app, request
 from peewee import DoesNotExist, SelectQuery
 from datetime import timezone
+import os
 import math
+import glob
 
 
 def flash_errors(form, category='warning'):
@@ -58,3 +60,33 @@ def paginate(query):
 
 def convert_utc_to_local(datetime):
     return datetime.replace(tzinfo=timezone.utc).astimezone(current_app.config['TIMEZONE'])
+
+
+def get_active_wiki_groups():
+    suffix_len = len(current_app.config['ACTIVE_DB_SUFFIX'])
+    return [
+        os.path.basename(fn)[:-suffix_len] \
+        for fn in glob.glob(os.path.join(
+            current_app.config['DB_PATH'], 
+            f'*{current_app.config["ACTIVE_DB_SUFFIX"]}'
+        ))
+    ]
+
+
+def get_inactive_wiki_groups():
+    suffix_len = len(current_app.config['INACTIVE_DB_SUFFIX'])
+    return [
+        os.path.basename(fn)[:-suffix_len] \
+        for fn in glob.glob(os.path.join(
+            current_app.config['DB_PATH'], 
+            f'*{current_app.config["INACTIVE_DB_SUFFIX"]}'
+        ))
+    ]
+
+
+def wiki_group_active(wiki_group):
+    return wiki_group in get_active_wiki_groups()
+
+
+def wiki_group_inactive(wiki_group):
+    return wiki_group in get_inactive_wiki_groups()

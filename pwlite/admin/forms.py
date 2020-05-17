@@ -11,9 +11,9 @@ class AddWikiGroupForm(FlaskForm):
         validators=[
             DataRequired('Please enter a wiki group name.'),
             Regexp(
-                '^[\w+ ]+$', 
+                '^[\w\- ]+$', 
                 message='Wiki group name must contain only letters, '
-                        'numbers, underscore, and whitespace.'
+                        'numbers, underscore, dash, and whitespace.'
             )
         ]
     )

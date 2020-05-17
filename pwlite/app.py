@@ -1,11 +1,10 @@
 # -*- coding: utf-8 -*-
 """The app module, containing the app factory function."""
 from flask import Flask, render_template
-import os
 
 from pwlite import commands, admin, wiki
 from pwlite.extensions import csrf_protect, db
-from pwlite.models import WikiGroup, WikiPage, WikiPageIndex
+from pwlite.models import WikiPage, WikiPageIndex
 
 
 def create_app(config_object='pwlite.settings'):
@@ -20,7 +19,6 @@ def create_app(config_object='pwlite.settings'):
     register_errorhandlers(app)
     register_shellcontext(app)
     register_commands(app)
-    register_database(app)
     return app
 
 
@@ -67,18 +65,3 @@ def register_commands(app):
     app.cli.add_command(commands.lint)
     app.cli.add_command(commands.clean)
     app.cli.add_command(commands.urls)
-
-
-def register_database(app):
-    admin_db_exists = os.path.exists(os.path.join(
-        app.config['DB_PATH'], app.config['ADMIN_DB']
-    ))
-    with app.app_context():
-        db.pick(app.config['ADMIN_DB'])
-    if not admin_db_exists:
-        db.create_tables([WikiGroup])
-    query = WikiGroup.select().where(WikiGroup.active==True)
-    app.active_wiki_groups = [
-        wiki_group.db_name for wiki_group in query.execute()
-    ]
-    db.close()

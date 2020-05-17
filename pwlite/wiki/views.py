@@ -10,7 +10,7 @@ import difflib
 from pwlite.decorators import decorate_blueprint
 from pwlite.extensions import db, markdown
 from pwlite.utils import flash_errors, xstr, get_object_or_404, \
-    get_pagination_kwargs, paginate
+    get_pagination_kwargs, paginate, wiki_group_active
 from pwlite.models import WikiPage, WikiPageIndex, WikiKeypage, \
     WikiPageVersion, WikiReference, WikiFile
 from pwlite.wiki.forms import WikiEditForm, RenameForm, \
