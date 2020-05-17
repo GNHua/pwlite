@@ -1,11 +1,9 @@
 # -*- coding: utf-8 -*-
 """Helper utilities and decorators."""
-from flask import flash, abort
+from flask import flash, abort, current_app, request
 from peewee import DoesNotExist, SelectQuery
 from datetime import timezone
 import math
-
-from pwlite.settings import TIMEZONE
 
 
 def flash_errors(form, category='warning'):
@@ -48,5 +46,15 @@ def get_pagination_kwargs(d, current_page_number, total_page_number):
         calc_page_num(d['current_page_number'], d['total_page_number'])
 
 
+def paginate(query):
+    current_page_number = request.args.get('page', default=1, type=int)
+    number_per_page = 100
+    total_page_number = math.ceil(query.count() / number_per_page)
+    query = query.paginate(current_page_number, paginate_by=number_per_page)
+    kwargs = dict(data=query.execute(), number_per_page=number_per_page)
+    get_pagination_kwargs(kwargs, current_page_number, total_page_number)
+    return kwargs
+
+
 def convert_utc_to_local(datetime):
-    return datetime.replace(tzinfo=timezone.utc).astimezone(TIMEZONE)
+    return datetime.replace(tzinfo=timezone.utc).astimezone(current_app.config['TIMEZONE'])

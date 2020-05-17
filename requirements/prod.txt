@@ -9,7 +9,7 @@ itsdangerous>=0.24
 click>=5.1
 
 # Database
-peewee==3.7.1
+peewee==3.8.0
 
 # Forms
 Flask-WTF==0.14.2

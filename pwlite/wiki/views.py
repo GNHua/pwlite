@@ -1,98 +1,25 @@
 # -*- coding: utf-8 -*-
 """Wiki section, including wiki pages for each group."""
 from flask import Blueprint, g, render_template, redirect, url_for, \
-    request, flash, send_from_directory, abort, current_app
+    request, flash, send_from_directory, current_app
 from datetime import datetime, timedelta
 import os
 import math
 import difflib
 
+from pwlite.decorators import decorate_blueprint
 from pwlite.extensions import db, markdown
 from pwlite.utils import flash_errors, xstr, get_object_or_404, \
-    calc_page_num, get_pagination_kwargs, convert_utc_to_local
+    get_pagination_kwargs, paginate
 from pwlite.models import WikiPage, WikiPageIndex, WikiKeypage, \
     WikiPageVersion, WikiReference, WikiFile
-from pwlite.wiki.forms import WikiEditForm, UploadForm, RenameForm, \
+from pwlite.wiki.forms import WikiEditForm, RenameForm, \
     SearchForm, KeyPageEditForm, HistoryRecoverForm
 from pwlite.diff import make_patch, apply_patches
-from pwlite.settings import DB_PATH, TIMEZONE
 from pwlite.markdown import render_wiki_page, render_wiki_file
 
 blueprint = Blueprint('wiki', __name__, static_folder='../static', url_prefix='/<wiki_group>')
-
-
-@blueprint.url_defaults
-def add_wiki_group_code(endpoint, values):
-    if 'wiki_group' in values:
-        return
-
-    try:
-        values.setdefault('wiki_group', g.wiki_group)
-    except AttributeError:
-        pass
-
-
-@blueprint.url_value_preprocessor
-def pull_wiki_group_code(endpoint, values):
-    g.wiki_group = values.pop('wiki_group')
-    if g.wiki_group not in current_app.active_wiki_groups:
-        abort(404)
-
-
-@blueprint.before_request
-def open_database_connection():
-    db.pick('{0}.db'.format(g.wiki_group))
-
-
-@blueprint.after_request
-def close_database_connection(response):
-    db.close()
-    return response
-
-
-# Docs: http://flask.pocoo.org/docs/1.0/templating/#context-processors
-@blueprint.context_processor
-def inject_wiki_group_data():
-    if g.wiki_group not in current_app.active_wiki_groups:
-        return dict()
-
-    if request.path.startswith('/{0}/edit/'.format(g.wiki_group)) \
-        or request.path.startswith('/{0}/upload/'.format(g.wiki_group)):
-        return dict(wiki_group=g.wiki_group)
-
-    search_form = SearchForm()
-
-    query = (WikiPage
-             .select(WikiPage.id, WikiPage.title)
-             .join(
-                 WikiKeypage,
-                 on=(WikiKeypage.wiki_page))
-             .order_by(WikiKeypage.id))
-    wiki_keypages = query.execute()
-
-    # TODO: enhancement - this might be a performance bottleneck in the future.
-    query = (WikiPage
-             .select(WikiPage.id, WikiPage.title, WikiPage.modified_on)
-             .order_by(WikiPage.modified_on.desc())
-             .limit(5))
-    wiki_changes = query.execute()
-
-    latest_change_time = convert_utc_to_local(wiki_changes[0].modified_on)
-    now = convert_utc_to_local(datetime.utcnow())
-
-    if latest_change_time.date() == now.date():
-        latest_change_time = latest_change_time.strftime('[%H:%M]')
-    else:
-        latest_change_time = latest_change_time.strftime('[%b %d]')
-
-    return dict(
-        wiki_group=g.wiki_group,
-        search_form=search_form,
-        wiki_keypages=wiki_keypages,
-        wiki_changes=wiki_changes,
-        latest_change_time=latest_change_time,
-        convert_utc_to_local=convert_utc_to_local
-    )
+decorate_blueprint(blueprint)
 
 
 @blueprint.route('/home')
@@ -129,23 +56,26 @@ def edit(wiki_page_id):
             WikiPage.modified_on),
         WikiPage.id==wiki_page_id
     )
-    form = WikiEditForm()
-    upload_form = UploadForm()
+    form = WikiEditForm(
+        textArea=wiki_page.markdown,
+        current_version=wiki_page.current_version,
+    )
 
     if form.validate_on_submit():
         if form.current_version.data == wiki_page.current_version:
-            g.wiki_page = wiki_page
-            g.wiki_refs = list(WikiPage
-                               .select(WikiPage.id)
-                               .join(WikiReference, on=WikiReference.referenced)
-                               .where(WikiReference.referencing == wiki_page)
-                               .execute())
-
-            diff = make_patch(wiki_page.markdown, form.textArea.data)
+            g.wiki_refs = list(
+                WikiPage
+                .select(WikiPage.id)
+                .join(WikiReference, on=WikiReference.referenced)
+                .where(WikiReference.referencing==wiki_page)
+                .execute()
+            )
+            md = form.textArea.data
+            diff = make_patch(wiki_page.markdown, md)
             if diff:
                 with db.atomic():
-                    toc, html = markdown(form.textArea.data)
-                    wiki_page.update_content(diff, form.textArea.data, html, toc)
+                    toc, html = markdown(wiki_page, md)
+                    wiki_page.update_db(diff, md, html, toc)
 
             return redirect(url_for('.page', wiki_page_id=wiki_page.id))
         else:
@@ -155,18 +85,15 @@ def edit(wiki_page_id):
     return render_template(
         'wiki/edit.html',
         wiki_page=wiki_page,
-        form=form,
-        upload_form=upload_form
+        form=form
     )
 
 
 @blueprint.route('/upload/<int:wiki_page_id>')
 def upload(wiki_page_id):
-    form = UploadForm()
     return render_template(
         'wiki/upload.html', 
-        wiki_page_id=wiki_page_id,
-        form=form
+        wiki_page_id=wiki_page_id
     )
 
 
@@ -185,7 +112,11 @@ def handle_upload():
                 mime_type=file.mimetype
             )
             # save uploaded file with WikiFile.id as filename
-            file.save(os.path.join(DB_PATH, g.wiki_group, str(wiki_file.id)))
+            file.save(os.path.join(
+                current_app.config['DB_PATH'],
+                g.wiki_group,
+                str(wiki_file.id)
+            ))
             wiki_file.size = file.tell()
             wiki_file.save()
 
@@ -197,8 +128,7 @@ def handle_upload():
             file_html += '<p>{}</p>'.format(render_wiki_file(
                 wiki_file.id,
                 wiki_file.name,
-                file_type,
-                tostring=True
+                file_type
             ))
 
         if upload_from_upload_page:
@@ -212,11 +142,50 @@ def handle_upload():
             )
 
             diff = make_patch(xstr(wiki_page.markdown), xstr(wiki_page.markdown)+file_markdown)
-            wiki_page.update_content_after_upload(diff, file_markdown, file_html)
+            wiki_page.update_db_after_upload(diff, file_markdown, file_html)
 
             return ''
 
     return file_markdown
+
+
+@blueprint.route('/replace-file', methods=['POST'])
+def replace_file():
+    form = request.form
+    file = request.files['wiki_file']
+    wiki_file_id = form.get('wiki_file_id', None)
+    wiki_file_markdown = '[file:{0}]'.format(wiki_file_id)
+
+    # save uploaded file with WikiFile.id as filename
+    file.save(os.path.join(
+        current_app.config['DB_PATH'],
+        g.wiki_group,
+        wiki_file_id
+    ))
+
+    wiki_file = WikiFile.get_or_none(WikiFile.id==int(wiki_file_id))
+
+    with db.atomic():
+        (WikiFile
+         .update(
+             name=file.filename,
+             mime_type=file.mimetype,
+             size=file.tell())
+         .where(WikiFile.id==int(wiki_file_id))
+         .execute())
+
+        if wiki_file and wiki_file.name != file.filename:
+            query = (WikiPage
+                     .select(WikiPage.id, WikiPage.markdown)
+                     .where(WikiPage.markdown.contains(wiki_file_markdown)))
+            for wiki_page in query.execute():
+                toc, html = markdown(wiki_page, wiki_page.markdown)
+                (WikiPage
+                .update(toc=toc, html=html)
+                .where(WikiPage.id==wiki_page.id)
+                .execute())
+
+    return ''
 
 
 @blueprint.route('/reference/<int:wiki_page_id>')
@@ -264,8 +233,8 @@ def rename(wiki_page_id):
                 old_markdown = '[[{}]]'.format(wiki_page.title)
                 new_markdown = '[[{}]]'.format(new_title)
 
-                old_html = render_wiki_page(wiki_page.id, wiki_page.title, tostring=True)
-                new_html = render_wiki_page(wiki_page.id, new_title, tostring=True)
+                old_html = render_wiki_page(wiki_page.id, wiki_page.title)
+                new_html = render_wiki_page(wiki_page.id, new_title)
 
                 # update the markdown of referencing wiki page 
                 query = (WikiPage
@@ -314,19 +283,16 @@ def rename(wiki_page_id):
 
 @blueprint.route('/file/<int:wiki_file_id>')
 def file(wiki_file_id):
-    fn = request.args.get('filename')
-    if not fn:
-        wiki_file = get_object_or_404(
-            WikiFile.select(WikiFile.id, WikiFile.name),
-            WikiFile.id==wiki_file_id
-        )
-        fn = wiki_file.name
+    wiki_file = get_object_or_404(
+        WikiFile.select(WikiFile.id, WikiFile.name),
+        WikiFile.id==wiki_file_id
+    )
 
     return send_from_directory(
-        os.path.join(DB_PATH, g.wiki_group),
+        os.path.join(current_app.config['DB_PATH'], g.wiki_group),
         str(wiki_file_id),
         as_attachment=True,
-        attachment_filename=fn
+        attachment_filename=wiki_file.name
     )
 
 
@@ -338,17 +304,18 @@ def search():
     current_page_number=request.args.get('page', default=1, type=int)
     number_per_page = 100
     kwargs = dict()
-    form = SearchForm(search=keyword, start_date=start_date, end_date=end_date)
+    form = SearchForm(keyword=keyword, start_date=start_date, end_date=end_date)
 
     if keyword and not keyword.isspace():
         filters = [WikiPageIndex.match(keyword)]
         if start_date:
-            temp = datetime.strptime(start_date, '%m/%d/%Y').replace(tzinfo=TIMEZONE)
-            filters.append(WikiPage.modified_on > temp.timestamp())
+            temp = datetime.strptime(start_date, '%m/%d/%Y')
+            temp = temp.replace(tzinfo=current_app.config['TIMEZONE'])
+            filters.append(WikiPage.modified_on >= temp.timestamp())
         if end_date:
             temp = datetime.strptime(end_date, '%m/%d/%Y')+timedelta(days=1)
-            temp = temp.replace(tzinfo=TIMEZONE)
-            filters.append(WikiPage.modified_on < temp.timestamp())
+            temp = temp.replace(tzinfo=current_app.config['TIMEZONE'])
+            filters.append(WikiPage.modified_on <= temp.timestamp())
 
         query = (WikiPage
                  .select(WikiPage.id, WikiPage.title, WikiPage.modified_on)
@@ -356,18 +323,15 @@ def search():
                      WikiPageIndex,
                      on=(WikiPage.id==WikiPageIndex.docid))
                  .where(*filters)
-                 .order_by(WikiPageIndex.rank(2.0, 1.0), WikiPage.modified_on.desc())
-                 .paginate(current_page_number, paginate_by=100))
-        total_page_number = math.ceil(WikiPage.select().count() / number_per_page)
+                 .order_by(WikiPageIndex.rank(2.0, 1.0), WikiPage.modified_on.desc()))
         # TODO: add title-only search
         # query = query.where(WikiPage.title.contains(search_keyword))
-        kwargs['data'] = query.execute()
-        get_pagination_kwargs(kwargs, current_page_number, total_page_number)
+        kwargs = paginate(query)
 
     if form.validate_on_submit():
         return redirect(url_for(
             '.search',
-            keyword=form.search.data,
+            keyword=form.keyword.data,
             start=form.start_date.data,
             end=form.end_date.data
         ))
@@ -404,7 +368,6 @@ def history(wiki_page_id):
             old_to_current_patches = [pv.diff for pv in wiki_page_versions]
             recovered_content = apply_patches(wiki_page.markdown, old_to_current_patches, revert=True)
 
-            g.wiki_page = wiki_page
             g.wiki_refs = list(WikiPage
                                .select(WikiPage.id)
                                .join(WikiReference, on=WikiReference.referenced)
@@ -414,8 +377,8 @@ def history(wiki_page_id):
             diff = make_patch(wiki_page.markdown, recovered_content)
             if diff:
                 with db.atomic():
-                    toc, html = markdown(recovered_content)
-                    wiki_page.update_content(diff, recovered_content, html, toc)
+                    toc, html = markdown(wiki_page, recovered_content)
+                    wiki_page.update_db(diff, recovered_content, html, toc)
             return redirect(url_for('.page', wiki_page_id=wiki_page.id))
 
     old_ver_num = request.args.get('version', default=wiki_page.current_version-1, type=int)
@@ -499,15 +462,10 @@ def keypage_edit():
 # TODO: enhancement - choose number of changes, sort by arbitrary column
 @blueprint.route('/changes')
 def changes():
-    current_page_number=request.args.get('page', default=1, type=int)
-    number_per_page = 100
     query = (WikiPage
              .select(WikiPage.id, WikiPage.title, WikiPage.modified_on)
-             .order_by(WikiPage.modified_on.desc())
-             .paginate(current_page_number, paginate_by=number_per_page))
-    total_page_number = math.ceil(WikiPage.select().count() / number_per_page)
-    kwargs = dict(data=query.execute(), number_per_page=number_per_page)
-    get_pagination_kwargs(kwargs, current_page_number, total_page_number)
+             .order_by(WikiPage.modified_on.desc()))
+    kwargs = paginate(query)
 
     return render_template(
         'wiki/changes.html',
@@ -528,15 +486,10 @@ def group_admin():
 
 @blueprint.route('/all-pages')
 def all_pages():
-    current_page_number=request.args.get('page', default=1, type=int)
-    number_per_page = 100
     query = (WikiPage
              .select(WikiPage.id, WikiPage.title, WikiPage.modified_on)
-             .order_by(WikiPage.id)
-             .paginate(current_page_number, paginate_by=number_per_page))
-    total_page_number = math.ceil(WikiPage.select().count() / number_per_page)
-    kwargs = dict(data=query.execute())
-    get_pagination_kwargs(kwargs, current_page_number, total_page_number)
+             .order_by(WikiPage.id))
+    kwargs = paginate(query)
 
     return render_template(
         'wiki/all_pages.html',
@@ -548,15 +501,10 @@ def all_pages():
 
 @blueprint.route('/all-files')
 def all_files():
-    current_page_number=request.args.get('page', default=1, type=int)
-    number_per_page = 100
     query = (WikiFile
              .select()
-             .order_by(WikiFile.id)
-             .paginate(current_page_number, paginate_by=number_per_page))
-    total_page_number = math.ceil(WikiFile.select().count() / number_per_page)
-    kwargs = dict(data=query.execute())
-    get_pagination_kwargs(kwargs, current_page_number, total_page_number)
+             .order_by(WikiFile.id))
+    kwargs = paginate(query)
 
     return render_template(
         'wiki/all_files.html',
@@ -564,6 +512,23 @@ def all_files():
     )
 
 # TODO: delete wiki files
+
+
+@blueprint.route('/pdf/<int:wiki_page_id>')
+def pdf(wiki_page_id):
+    wiki_page = get_object_or_404(
+        WikiPage.select(
+            WikiPage.id,
+            WikiPage.title,
+            WikiPage.html,
+            WikiPage.modified_on),
+        WikiPage.id==wiki_page_id
+    )
+
+    return render_template(
+        'wiki/pdf.html',
+        wiki_page=wiki_page,
+    )
 
 
 @blueprint.route('/markdown')

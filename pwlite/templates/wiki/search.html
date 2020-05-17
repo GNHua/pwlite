@@ -14,7 +14,7 @@ Search
   {{ form.csrf_token }}
   <div class="form-group">
     <label for="inputSearch">Keywords</label>
-    {{ form.search(class_='form-control', id='inputSearch', placeholder='Search for...') }}
+    {{form.keyword(class_='form-control', id='inputSearch', placeholder='Search for...') }}
   </div>
   <div class="form-row">
     <div class="form-group col-md-6">
@@ -30,9 +30,8 @@ Search
 </form>
 <br>
 
-{% if data %}
 <div id="search-result">
-  <h4>Search Results for <i>"{{ form.search.data }}"</i></h4>
+  <h4>Search Results for <i>"{{form.keyword.data }}"</i></h4>
   <table class="table table-sm">
     <thead>
       <tr>
@@ -42,6 +41,7 @@ Search
       </tr>
     </thead>
     <tbody>
+      {% if data %}
       {% for wiki_page in data %}
       <tr>
         <th scope="row">{{ loop.index }}</th>
@@ -49,16 +49,16 @@ Search
         <td>{{ convert_utc_to_local(wiki_page.modified_on).strftime('%Y-%m-%d %H:%M:%S') }}</td>
       </tr>
       {% endfor %}
+      {% endif %}
     </tbody>
   </table>
 </div>
 
 {% macro my_url_for(page_number) -%}
-{{ url_for('wiki.search', search=form.search.data, page=page_number) }}
+{{ url_for('wiki.search', keyword=form.keyword.data, start=form.start_date.data, end=form.end_date.data, page=page_number) }}
 {%- endmacro %}
 
 {% include 'wiki/pagination.html' %}
-{% endif %}
 <br><br><br><br><br><br><br><br>
 {% endblock other_content %}
 

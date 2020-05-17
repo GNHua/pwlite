@@ -1,5 +1,16 @@
 {% extends 'wiki/layout.html' %}
 
+{% block css %}
+{{ super() }}
+<style>
+  .table div {
+    white-space: nowrap; 
+    overflow: hidden;
+    text-overflow: ellipsis; 
+  }
+</style>
+{% endblock css %}
+
 {% block header %}
 All Pages
 {% endblock header %}
@@ -13,18 +24,18 @@ All Pages
 
 <table class="table table-sm">
   <thead>
-    <tr>
-      <th scope="col">ID</th>
-      <th scope="col">Title</th>
-      <th scope="col">Last Edit</th>
+    <tr class="row m-0">
+      <th class="d-inline-block col-1">ID</th>
+      <th class="d-inline-block col-9 pr-4">Title</th>
+      <th class="d-inline-block col-2">Last Edit</th>
     </tr>
   </thead>
   <tbody>
     {% for wiki_page in data %}
-    <tr>
-      <th scope="row">{{ wiki_page.id }}</th>
-      <td><a href="{{ url_for('wiki.page', wiki_page_id=wiki_page.id) }}">{{ wiki_page.title }}</a></td>
-      <td>{{ convert_utc_to_local(wiki_page.modified_on).strftime('%Y-%m-%d %H:%M:%S') }}</td>
+    <tr class="row m-0">
+      <th class="d-inline-block col-1">{{ wiki_page.id }}</th>
+      <td class="d-inline-block col-9 pr-4"><div><a href="{{ url_for('wiki.page', wiki_page_id=wiki_page.id) }}" title="{{ wiki_page.title }}">{{ wiki_page.title }}</a></div></td>
+      <td class="d-inline-block col-2">{{ convert_utc_to_local(wiki_page.modified_on).strftime('%Y-%m-%d %H:%M:%S') }}</td>
     </tr>
     {% endfor %}
   </tbody>

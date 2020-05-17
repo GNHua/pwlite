@@ -1,0 +1,33 @@
+{% extends "layout.html" %}
+
+{% block css %}
+{{ stylesheet_tag('editor/lib/github-markdown.css') }}
+{% endblock css %}
+
+{% block body %}
+<div>
+  <main role="main" class="col-lg-8 mx-auto">
+    <div class="markdown-body">
+      <h1>{{ wiki_page.title }}</h1>
+      {% if wiki_page.html %}
+      {{ wiki_page.html | safe }}
+      {% endif %}
+      <div align="right" class="border-bottom border-secondary">
+        <i><small>modified on {{ convert_utc_to_local(wiki_page.modified_on).strftime('%Y-%m-%d %H:%M:%S %Z') }}</small></i>
+      </div>
+    </div>
+  </main>
+</div>
+{% endblock body %}
+
+{% block js %}
+<script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML' async></script>
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+      processEscapes: true
+    }
+  });
+</script>
+{% endblock js %}

@@ -2,7 +2,7 @@
   <strong>Key Pages</strong> <a href="{{ url_for('wiki.keypage_edit') }}">[edit]</a>
   <ul class="nav flex-column">
     {% for wiki_keypage in wiki_keypages %}
-    <li class="nav-item col-md-12 px-0">
+    <li class="nav-item">
       <a href="{{ url_for('wiki.page', wiki_page_id=wiki_keypage.id) }}">{{ wiki_keypage.title }}</a>
     </li>
     {% endfor %}
@@ -11,7 +11,7 @@
   <strong>Changes {{ latest_change_time }}</strong> <a href="{{ url_for('wiki.changes') }}">[more]</a>
   <ul class="nav flex-column">
     {% for wiki_change in wiki_changes %}
-    <li class="nav-item col-md-12 px-0">
+    <li class="nav-item">
       <a href="{{ url_for('wiki.page', wiki_page_id=wiki_change.id) }}">{{ wiki_change.title }}</a>
     </li>
     {% endfor %}

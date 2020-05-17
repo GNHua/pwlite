@@ -28,9 +28,9 @@
       <form action="{{ url_for('wiki.handle_upload') }}" method="POST" enctype="multipart/form-data" id="upload-form">
         <div class="form-inline">
           <button type="button" class="btn btn-sm btn-primary" onClick="document.getElementById('file-picker').click();">Choose</button>&nbsp;
-          {{ form.file(multiple='', class_='d-none', id='file-picker') }}
+          <input id="file-picker" multiple name="file" type="file" class="d-none">
           <span id="file-number">0 file selected</span>
-          {{ form.upload(class_='ml-auto btn btn-sm btn-success', id='upload-button') }}&nbsp;
+          <input class="ml-auto btn btn-sm btn-success" id="upload-button" name="upload" type="submit" value="Upload">&nbsp;
           <button type="button" class="ml-sm btn btn-sm btn-secondary" onClick="window.parent.window.close();">Cancel</button>
         </div>
       </form>

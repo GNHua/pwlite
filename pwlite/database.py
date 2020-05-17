@@ -1,16 +1,15 @@
 # -*- coding: utf-8 -*-
-# These two lines uses the peewee orm.
+from flask import current_app
 from peewee import Proxy
 from playhouse.sqlite_ext import SqliteExtDatabase
 import os
 
-from pwlite.settings import DB_PATH
 
 class DatabaseProxy(Proxy):
 
     def pick(self, db_name):
         if db_name != ':memory:':
-            db_name = os.path.join(DB_PATH, db_name)
+            db_name = os.path.join(current_app.config['DB_PATH'], db_name)
         db = SqliteExtDatabase(
             db_name,
             # Recommended settings from peewee docs:

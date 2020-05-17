@@ -105,7 +105,7 @@ function doUpload() {
   let $completion = $('#completion');
 
   // Gray out the form.
-  $('#upload-form :input').attr('disabled', 'disabled');
+  $(':input').attr('disabled', 'disabled');
 
   // Initialize the progress bar.
   $progressBar.css({'width': '0%'});

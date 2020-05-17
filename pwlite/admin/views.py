@@ -8,7 +8,6 @@ from peewee import IntegrityError
 
 from pwlite.utils import flash_errors, get_object_or_404
 from pwlite.extensions import db
-from pwlite.settings import ADMIN_DB, DB_PATH
 from pwlite.models import WikiGroup, WikiPage, WikiPageIndex, \
     WikiPageVersion, WikiReference, WikiFile, WikiKeypage
 from pwlite.admin.forms import AddWikiGroupForm
@@ -17,7 +16,7 @@ blueprint = Blueprint('admin', __name__, static_folder='../static')
 
 @blueprint.before_request
 def open_database_connection():
-    db.pick(ADMIN_DB)
+    db.pick(current_app.config['ADMIN_DB'])
 
 
 @blueprint.after_request
@@ -59,7 +58,10 @@ def super_admin():
                 db_name=new_db_name,
                 active=True
             )
-            os.mkdir(os.path.join(DB_PATH, new_wiki_group.db_name))
+            os.mkdir(os.path.join(
+                current_app.config['DB_PATH'],
+                new_wiki_group.db_name
+            ))
             query = WikiGroup.select().where(WikiGroup.active==True)
             current_app.active_wiki_groups = [
                 wiki_group.db_name for wiki_group in query.execute()
@@ -129,9 +131,9 @@ def delete_group(wiki_group):
     # remove wiki group record in _admin.db
     WikiGroup.delete().where(WikiGroup.db_name==wiki_group).execute()
     # remove the database file
-    os.remove(os.path.join(DB_PATH, '{0}.db'.format(wiki_group)))
+    os.remove(os.path.join(current_app.config['DB_PATH'], '{0}.db'.format(wiki_group)))
     # remove uploaded files
-    shutil.rmtree(os.path.join(DB_PATH, wiki_group))
+    shutil.rmtree(os.path.join(current_app.config['DB_PATH'], wiki_group))
     # remove db name from cached db names
     current_app.active_wiki_groups.remove(wiki_group)
     return redirect(url_for('.super_admin'))
