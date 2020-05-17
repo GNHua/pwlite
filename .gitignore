@@ -40,3 +40,6 @@ MathJax/
 
 # log
 *.log
+
+# vscode
+.vscode
