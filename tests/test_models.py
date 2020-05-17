@@ -167,7 +167,7 @@ class TestWikiPage:
                     markdown='bar {0}'.format(i+1)
                 )
                 WikiPageIndex.create(
-                    docid=wiki_page.id,
+                    rowid=wiki_page.id,
                     title=wiki_page.title,
                     markdown=wiki_page.markdown
                 )
@@ -183,14 +183,14 @@ class TestWikiPage:
                 title='foo'
             )
             WikiPageIndex.create(
-                docid=wiki_page.id,
+                rowid=wiki_page.id,
                 title=wiki_page.title
             )
 
         wiki_pages_bar = WikiPageIndex.search('bar')
         assert len(wiki_pages_bar) == 0
 
-        WikiPageIndex.update(title='bar').where(WikiPageIndex.docid==1).execute()
+        WikiPageIndex.update(title='bar').where(WikiPageIndex.rowid==1).execute()
         WikiPage.update(title='bar').where(WikiPage.id==1).execute()
 
         wiki_pages_bar = WikiPageIndex.search('bar')
@@ -202,7 +202,7 @@ class TestWikiPage:
                 title='foo'
             )
             WikiPageIndex.create(
-                docid=wiki_page.id,
+                rowid=wiki_page.id,
                 title='bar'
             )
 
@@ -218,7 +218,7 @@ class TestWikiPage:
                 html='spam'
             )
             WikiPageIndex.create(
-                docid=wiki_page.id,
+                rowid=wiki_page.id,
                 title=wiki_page.title,
                 markdown=wiki_page.markdown
             )
@@ -227,7 +227,7 @@ class TestWikiPage:
                  .select(WikiPage, WikiPageIndex.bm25(3.0, 2.0))
                  .join(
                      WikiPageIndex,
-                     on=(WikiPage.id == WikiPageIndex.docid))
+                     on=(WikiPage.id == WikiPageIndex.rowid))
                  .where(WikiPageIndex.match('foo bar'))
                  .order_by(WikiPageIndex.bm25(3.0, 2.0)))
         wiki_page = query.execute()[0]
@@ -245,7 +245,7 @@ class TestWikiPage:
                 markdown='bar'
             )
             WikiPageIndex.create(
-                docid=wiki_page.id,
+                rowid=wiki_page.id,
                 title=wiki_page.title,
             )
 
@@ -254,7 +254,7 @@ class TestWikiPage:
                 markdown='foo1 '
             )
             WikiPageIndex.create(
-                docid=wiki_page.id,
+                rowid=wiki_page.id,
                 title=wiki_page.title,
                 markdown=wiki_page.markdown
             )
@@ -269,7 +269,7 @@ class TestWikiPage:
         # assert False
         assert isinstance(query.execute()[0], WikiPageIndex)
 
-        # assert [wp.docid for wp in query] == [1, 2]
+        # assert [wp.rowid for wp in query] == [1, 2]
 
     def test_atomic_update_for_string_addition(self, db):
         wiki_page = WikiPage.create(

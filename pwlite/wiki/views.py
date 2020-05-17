@@ -246,7 +246,7 @@ def rename(wiki_page_id):
                     new_markdown_content = ref.markdown.replace(old_markdown, new_markdown)
                     (WikiPageIndex
                      .update(markdown=new_markdown_content)
-                     .where(WikiPageIndex.docid==ref.id)
+                     .where(WikiPageIndex.rowid==ref.id)
                      .execute())
 
                     (WikiPage
@@ -321,7 +321,7 @@ def search():
                  .select(WikiPage.id, WikiPage.title, WikiPage.modified_on)
                  .join(
                      WikiPageIndex,
-                     on=(WikiPage.id==WikiPageIndex.docid))
+                     on=(WikiPage.id==WikiPageIndex.rowid))
                  .where(*filters)
                  .order_by(WikiPageIndex.rank(2.0, 1.0), WikiPage.modified_on.desc()))
         # TODO: add title-only search

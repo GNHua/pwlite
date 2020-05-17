@@ -18,7 +18,7 @@ class WikiRenderer(TocMixin, Renderer):
                          .get())
         except WikiPage.DoesNotExist:
             wiki_page = WikiPage.create(title=wiki_page_title)
-            wiki_page_index = WikiPageIndex.create(docid=wiki_page.id, title=wiki_page_title)
+            wiki_page_index = WikiPageIndex.create(rowid=wiki_page.id, title=wiki_page_title)
 
         (WikiReference
          .insert(referencing=g.wiki_page, referenced=wiki_page)

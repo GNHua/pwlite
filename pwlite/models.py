@@ -3,7 +3,7 @@
 from flask import abort, g
 from peewee import Model, CharField, BooleanField, IntegerField, \
     DateTimeField, TextField, ForeignKeyField, TimestampField
-from playhouse.sqlite_ext import FTSModel, SearchField
+from playhouse.sqlite_ext import FTS5Model, SearchField
 import time
 
 from pwlite.extensions import db
@@ -21,9 +21,21 @@ class BaseModel(Model):
             abort(404)
 
 
-class BaseFTSModel(FTSModel):
+class BaseFTS5Model(FTS5Model):
     class Meta:
         database = db
+
+    @classmethod
+    def rebuild(cls):
+        cls._fts_cmd('rebuild')
+
+    @classmethod
+    def optimize(cls):
+        cls._fts_cmd('optimize')
+
+    @classmethod
+    def delete_all(cls):
+        cls._fts_cmd('delete-all')
 
 
 class WikiPage(BaseModel):
@@ -46,7 +58,7 @@ class WikiPage(BaseModel):
 
         (WikiPageIndex
          .update(markdown=markdown)
-         .where(WikiPageIndex.docid==self.id)
+         .where(WikiPageIndex.rowid==self.id)
          .execute())
 
         (WikiPage
@@ -75,7 +87,7 @@ class WikiPage(BaseModel):
 
         (WikiPageIndex
          .update(markdown=self.markdown+file_markdown)
-         .where(WikiPageIndex.docid==self.id)
+         .where(WikiPageIndex.rowid==self.id)
          .execute())
 
         (WikiPage
@@ -88,7 +100,7 @@ class WikiPage(BaseModel):
          .execute())
 
 
-class WikiPageIndex(BaseFTSModel):
+class WikiPageIndex(BaseFTS5Model):
     title = SearchField()
     markdown = SearchField()
 
