@@ -24,3 +24,4 @@ TODO
 2. Add User and authentication
 3. Add filter by User in Recent Changes and Search
 4. Integrate reverse proxy to make app self-contained - This might lead to re-writting the entire project in Java or Go.
+5. Replace Waitress with Gevent (supports HTTPS)
