@@ -22,7 +22,7 @@ python-dotenv==0.9.1
 
 # Markdown
 Markdown==2.6.8
-pymdown-extensions==3.5
+pymdown-extensions==10.0
 mistune==0.8.4
 mistune-contrib==0.1
 
